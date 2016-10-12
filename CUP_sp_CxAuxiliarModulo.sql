@@ -1,13 +1,16 @@
 DECLARE 
   @Ejercicio INT = 2016,
   @Periodo INT = 9,
-  @Modulo CHAR(5)  = 'CXP'
+  @Modulo CHAR(5)  = 'CXP',
+  @FechaInicio DATE
+
+  SET @FechaInicio = CAST((CAST(@Ejercicio AS VARCHAR) + '-' + CAST(@Periodo AS VARCHAR) + '-01') AS DATE)
 
 BEGIN
 
   -- Detalle Auxiliar
   SELECT   
-    aux.ID,
+    AuxID  = aux.ID,
     aux.Fecha,
     aux.Sucursal,
     Proveedor = aux.Cuenta,
@@ -120,9 +123,72 @@ BEGIN
   AND aux.Periodo = @Periodo
   AND ISNULL(at.Clave,'') NOT IN ('CXP.SCH','CXP.SD')
   AND aux.Modulo = 'CXP'
-  ORDER BY 
-    aux.Modulo,
-    t.Clave,
-    Aux.Aplica,
-    at.Clave
+
+  UNION
+  -- Reevaluaciones de Movimientos Con saldo anterior
+  -- al ejercicio / periodo consultado.
+  SELECT 
+    AuxID = NULL,
+    Fecha = CAST(p.FechaEmision AS DATE),
+    p.Sucursal,
+    p.Proveedor,
+    ProvNombre = REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
+    ProvCta = REPLACE(REPLACE(REPLACE(Prov.Cuenta,CHAR(13),''),CHAR(10),''),CHAR(9),''),
+    Modulo = 'CXP',
+    ModuloID = p.ID,
+    p.Mov,
+    p.MovID,
+    p.ProveedorMoneda,
+    p.ProveedorTipoCambio,
+    Cargo = 0,
+    Abono = 0,
+    Neto = 0,
+    CargoMN = ISNULL(impCargoAbono.Cargo,0),
+    AbonoMN = ISNULL(impCargoAbono.Abono,0),
+    NetoMN = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
+    FluctuacionMN  = 0,
+    ReevaluacionMN  = 0,
+    d.Aplica,
+    d.AplicaID,
+    EsCancelacion = 0,
+    OrigenModulo =  ' ',
+    OrigenModuloID = ' ',
+    OrigenMov = '',
+    OrigenMovID = '',
+    OrigenPoliza = '',
+    PolizaID = p.ContID,
+    PolizaMov = ISNULL(pol.Mov,''),
+    PolizaMovId = ISNULL(pol.MovID,'')
+  FROM 
+    Cxp p
+  JOIN Prov ON prov.Proveedor = p.Proveedor
+  JOIN CxpD d ON d.Id = p.ID
+  JOIN movtipo t ON t.Modulo = 'CXP'
+                AND t.Mov  = p.Mov 
+  JOIN Cxp doc ON doc.Mov = d.Aplica
+              AND doc.MovID = d.AplicaID
+  -- Cargos Abonos ( para mantener el formato del auxiliar )
+  CROSS APPLY (
+                SELECT 
+                  Cargo = CASE
+                            WHEN ISNULL(d.Importe,0) >= 0 THEN
+                              ISNULL(d.Importe,0)
+                            ELSE 
+                              0
+                          END,
+                  Abono = CASE
+                            WHEN ISNULL(d.Importe,0) < 0 THEN
+                              ISNULL(d.Importe,0)
+                            ELSE 
+                              0
+                          END
+                ) impCargoAbono
+  LEFT JOIN Cont pol ON pol.ID = p.ContID
+  WHERE 
+    t.Clave = 'CXP.RE'
+  AND p.Estatus = 'CONCLUIDO'
+  AND p.Ejercicio = @Ejercicio
+  AND p.Periodo = @Periodo
+  AND CAST(doc.FechaEmision AS DATE) < @FechaInicio
+
 END
