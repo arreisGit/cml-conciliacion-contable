@@ -9,7 +9,6 @@ BEGIN
   SELECT   
     aux.ID,
     aux.Fecha,
-    aux.Empresa,
     aux.Sucursal,
     Proveedor = aux.Cuenta,
     ProvNombre = REPLACE(REPLACE(REPLACE(prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
@@ -43,10 +42,10 @@ BEGIN
   JOIN Prov ON prov.Proveedor = Aux.Cuenta
   JOIN Movtipo t ON t.Modulo = aux.Modulo 
                 AND  t.Mov  = aux.Mov
-  JOIN MovTipo at ON at.Modulo = aux.Modulo
+  LEFT JOIN MovTipo at ON at.Modulo = aux.Modulo
                       AnD at.Mov = aux.Aplica
-  JOIN Cxp p ON 'CXP' = aux.Modulo
-            AND p.ID = aux.ModuloID      
+  LEFT JOIN Cxp p ON 'CXP' = aux.Modulo
+                 AND p.ID = aux.ModuloID      
   LEFT JOIN Compra c ON 'COMS' = p.OrigenTipo
                     AND c.Mov = p.Origen
                     AND c.MovID = p.OrigenID
@@ -68,7 +67,7 @@ BEGIN
                               AND df.DModulo = 'CONT'
                               AND (  
                                     ( 
-                                      p.Estatus = 'CANCELADO'
+                                      ISNULL(p.Estatus,'') = 'CANCELADO'
                                     AND  (   
                                               (     
                                                  aux.EsCancelacion = 0 
@@ -81,7 +80,7 @@ BEGIN
                                         )
                                     )
                                   OR(  
-                                        p.Estatus <> 'CANCELADO' 
+                                        ISNULL(p.Estatus,'') <> 'CANCELADO' 
                                     AND df.DID = mf.DID
                                     )
                                   )
@@ -96,7 +95,7 @@ BEGIN
     r.Mayor = 'CXP'
   AND aux.Ejercicio = @Ejercicio 
   AND aux.Periodo = @Periodo
-  AND at.Clave NOT IN ('CXP.SCH','CXP.SD')
+  AND ISNULL(at.Clave,'') NOT IN ('CXP.SCH','CXP.SD')
   AND aux.Modulo = 'CXP'
   ORDER BY 
     aux.Modulo,
