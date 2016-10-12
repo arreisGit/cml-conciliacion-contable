@@ -25,6 +25,8 @@ BEGIN
     CargoMN = ROUND(ISNULL(aux.Cargo,0) * aux.TipoCambio,2,1),
     AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio,2,1),
     NetoMN =  ROUND((ISNULL(aux.Cargo,0) -ISNULL( aux.Abono,0)) * aux.TipoCambio,2,1),
+    FluctuacionMN  = ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1,
+    ReevaluacionMN  = ISNULL(revsMes.Importe,0),
     aux.Aplica,
     aux.AplicaID,
     aux.EsCancelacion,
@@ -52,6 +54,27 @@ BEGIN
   LEFT JOIN Gasto g ON 'GAS' = p.OrigenTipo
                     AND g.Mov = p.Origen
                     AND g.MovID = p.OrigenID
+  -- Fluctuacion Cambiaria
+  LEFT JOIN CUP_v_CxDiferenciasCambiarias fc ON fc.Modulo = aux.Modulo
+                                            AND fc.ModuloID = aux.ModuloId
+                                            AND fc.Documento = aux.Aplica
+                                            AND fc.DocumentoID = aux.AplicaID
+  -- Reevaluaciones del MES 
+  OUTER APPLY ( SELECT
+                    Importe = SUM(ISNULL(revsD.Importe,0))              
+                 FROM 
+                    Cxp revs 
+                JOIN CxpD revsD ON  revsD.Id = revs.ID
+                JOIN Movtipo revsT ON revst.Modulo = 'CXP'
+                                  AND revst.Mov =   revs.Mov
+                WHERE
+                  revsT.Clave = 'CXP.RE'
+                AND revs.Estatus = 'CONCLUIDO'
+                AND revs.Ejercicio = @Ejercicio
+                AND revs.Periodo = @Periodo
+                AND revsD.Aplica = aux.Mov
+                AND revsD.AplicaID = aux.MovId  
+               ) revsMes
   -- Poliza  Contable: Para los movimientos cancelados
   -- se debe trae la poliza correcta tanto para la provision
   -- como para la cancelacion.
