@@ -178,7 +178,7 @@ BEGIN
                           END,
                   Abono = CASE
                             WHEN ISNULL(d.Importe,0) < 0 THEN
-                              ISNULL(d.Importe,0)
+                              ABS(ISNULL(d.Importe,0))
                             ELSE 
                               0
                           END

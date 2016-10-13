@@ -38,14 +38,14 @@ SELECT -- Cobros CXC
   DocumentoTipo = dt.Clave,
   Moneda = c.ClienteMoneda,
   Importe = importe_aplica.Importe,
-  TipoCambioReevaluado  = origen.TipoCambio,
+  TipoCambioRev  = tcRev.TipoCambio,
   TipoCambioPago        = c.ClienteTipoCambio,
-  ImporteMN_al_TC_Reevaluado = importes_calculo.ImporteMNTCOrigen,
-  ImporteMN_al_TC_Pago = importes_calculo.ImporteMNTCAplica,
+  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
+  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = dt.Factor,
-  Diferencia_Cambiaria_MN = Round((  
+  Diferencia_Cambiaria_MN = ROUND((  
                                     ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                                  - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                                  - ISNULL(importes_calculo.ImporteMNTCRev,0)
                                   ) * dt.Factor,4,1)
 FROM
   Cxc c 
@@ -55,7 +55,7 @@ JOIN cxcD d ON d.id = c.id
 JOIN Movtipo dt ON dt.Modulo = 'CXC'
                 AND dt.Mov = d.Aplica
 JOIN cxc origen ON origen.Mov = d.Aplica
-                AND origen.Movid = d.AplicaID
+               AND origen.Movid = d.AplicaID
 -- Importe Aplica 
 CROSS APPLY( SELECT   
                 FactorTC =   ROUND((c.TipoCambio / c.ClienteTipoCambio),4,1),
@@ -82,11 +82,11 @@ OUTER APPLY ( SELECT TOP 1
 OUTER APPLY(
             SELECT 
               TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
-            ) historico
+            ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
             SELECT
-              ImporteMNTCOrigen =  ROUND(ISNULL(importe_aplica.Importe,0) *  origen.TipoCambio,4,1),
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.ClienteTipoCambio,4,1)
             ) importes_calculo
 
@@ -111,14 +111,14 @@ SELECT
   DocumentoTipo = mt.Clave,
   Moneda = c.Moneda,
   Importe = importe_aplica.Importe,
-  TipoCambioReevaluado  = origen.TipoCambio,
+  TipoCambioRev  = tcRev.TipoCambio,
   TipoCambioPago  = c.TipoCambio,
-  ImporteMN_al_TC_Reevaluado = importes_calculo.ImporteMNTCOrigen,
-  ImporteMN_al_TC_Pago = importes_calculo.ImporteMNTCAplica,
+  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
+  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = mt.Factor,
   DiferenciaMN = Round((  
                           ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                        - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
                         ) * mt.Factor,4,1)
 FROM
   Cxc c 
@@ -156,12 +156,11 @@ OUTER APPLY ( SELECT TOP 1
 OUTER APPLY(
             SELECT 
               TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
-            ) historico
+            ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
             SELECT
-              ImporteMNTCHistorico  = ROUND(ISNULL(importe_aplica.Importe,0) *  historico.TipoCambio,4,1),
-              ImporteMNTCOrigen =  ROUND(ISNULL(importe_aplica.Importe,0) *  origen.TipoCambio,4,1),
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.TipoCambio,4,1)
             ) importes_calculo
 WHERE 
@@ -183,14 +182,14 @@ SELECT
   DocumentoTipo = dt.Clave,
   Moneda = p.ProveedorMoneda,
   Importe = importe_aplica.Importe,
-  TipoCambioReevaluado  = historico.TipoCambio,
+  TipoCambioReevaluado  = tcRev.TipoCambio,
   TipoCambioPago  = p.ProveedorTipoCambio,
-  ImporteMN_al_TC_Reevaluado = importes_calculo.ImporteMNTCOrigen,
-  ImporteMN_al_TC_Pago = importes_calculo.ImporteMNTCAplica,
+  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
+  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = -1,
   DiferenciaMN = ROUND((  
                           ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                        - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
                        ) * -1,4,1)
 FROM
   Cxp p 
@@ -227,11 +226,11 @@ OUTER APPLY ( SELECT TOP 1
 OUTER APPLY(
             SELECT 
               TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
-            ) historico
+            ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
             SELECT
-              ImporteMNTCOrigen =  ROUND(ISNULL(importe_aplica.Importe,0) *  historico.TipoCambio,4,1),
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
             ) importes_calculo
 WHERE 
@@ -255,14 +254,14 @@ SELECT
   DocumentoTipo = mt.Clave,
   Moneda = p.Moneda,
   Importe         = importe_aplica.Importe,
-  TipoCambioReevaluado  = historico.TipoCambio,
+  TipoCambioReevaluado  = tcRev.TipoCambio,
   TipoCambioPago  = p.TipoCambio,
-  ImporteMN_al_TC_Reevaluado = importes_calculo.ImporteMNTCOrigen,
+  ImporteMN_al_TC_Rev = importes_calculo.ImporteMNTCRev,
   ImporteMN_al_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = 1,
   DiferenciaMN = ROUND((  
                         ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                      - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                      - ISNULL(importes_calculo.ImporteMNTCRev,0)
                         ) * 1,4,1)
 FROM
   CXP p
@@ -300,11 +299,11 @@ OUTER APPLY ( SELECT TOP 1
 OUTER APPLY(
             SELECT 
               TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
-            ) historico
+            ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
             SELECT
-              ImporteMNTCOrigen =  ROUND(ISNULL(importe_aplica.Importe,0) *  historico.TipoCambio,4,1),
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
             ) importes_calculo
 WHERE 
