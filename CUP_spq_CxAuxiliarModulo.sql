@@ -1,12 +1,43 @@
-DECLARE 
-  @Ejercicio INT = 2016,
-  @Periodo INT = 9,
-  @Modulo CHAR(5)  = 'CXP',
-  @FechaInicio DATE
+SET ANSI_NULLS, ANSI_WARNINGS ON;
 
-  SET @FechaInicio = CAST((CAST(@Ejercicio AS VARCHAR) + '-' + CAST(@Periodo AS VARCHAR) + '-01') AS DATE)
+GO
 
+IF EXISTS (SELECT * 
+		   FROM SYSOBJECTS 
+		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarModulo') AND 
+				 TYPE = 'P')
 BEGIN
+  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarModulo 
+END	
+
+
+GO
+
+-- =============================================
+-- Created by:    Enrique Sierra Gtez
+-- Creation Date: 2016-10-13
+-- Last Modified: 2016-10-13 
+--
+-- Description: Obtiene los auxiliares de
+-- Cxc o Cxp con suficiente informacion para
+-- poder hacer el cruce contra Contabilidad
+-- 
+-- Example: EXEC CUP_spq_CxAuxiliarModulo 'CXP', 2016, 9
+-- =============================================
+
+
+CREATE PROCEDURE dbo.CUP_spq_CxAuxiliarModulo
+  @Modulo CHAR(5),
+  @Ejercicio INT,
+  @Periodo INT
+AS BEGIN 
+
+  DECLARE
+    @FechaInicio DATE = CAST(CAST(@Ejercicio AS VARCHAR)
+                                  + '-' 
+                                  + CAST(@Periodo AS VARCHAR)
+                                  + '-01' AS DATE)
+
 
   -- Detalle Auxiliar
   SELECT   
@@ -24,12 +55,15 @@ BEGIN
     aux.TipoCambio,
     Cargo = ISNULL(aux.Cargo,0),
     Abono = ISNULL(aux.Abono,0),
-    Neto = ISNULL(aux.Cargo,0) -ISNULL( aux.Abono,0),
-    CargoMN = ROUND(ISNULL(aux.Cargo,0) * aux.TipoCambio,2,1),
-    AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio,2,1),
-    NetoMN =  ROUND((ISNULL(aux.Cargo,0) -ISNULL( aux.Abono,0)) * aux.TipoCambio,2,1),
-    FluctuacionMN  = ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1,
-    ReevaluacionMN  = ISNULL(revsMes.Importe,0),
+    Neto = calc.Neto,
+    CargoMN = ROUND(ISNULL(aux.Cargo,0) * aux.TipoCambio,4,1),
+    AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio,4,1),
+    NetoMN =  ROUND(ISNULL(calc.Neto,0) * aux.TipoCambio,4,1),
+    FluctuacionMN  = ROUND(calc.FluctuacionMN * -1,4,1),
+    ReevaluacionMN  = ROUND(ISNULL(revsMes.Importe,0),4,1),
+    TotalMN = ROUND(  (calc.Neto * aux.TipoCambio)
+                    + (calc.FluctuacionMN * -1)
+                    + ISNULL(revsMes.Importe,0),4,1),
     aux.Aplica,
     aux.AplicaID,
     aux.EsCancelacion,
@@ -78,6 +112,11 @@ BEGIN
                 AND revsD.Aplica = aux.Mov
                 AND revsD.AplicaID = aux.MovId  
                ) revsMes
+ -- Campos Calculados
+   CROSS APPLY ( SELECT   
+                   Neto = ISNULL(aux.Cargo,0) - ISNULL( aux.Abono,0),
+                   FluctuacionMN  = ISNULL(fc.Diferencia_Cambiaria_MN,0)
+                ) Calc
   -- Poliza  Contable: Para los movimientos cancelados
   -- se debe trae la poliza correcta tanto para la provision
   -- como para la cancelacion.
@@ -116,7 +155,7 @@ BEGIN
               ORDER BY
                 df.DID DESC
              ) pol
- 
+
   WHERE
     r.Mayor = 'CXP'
   AND aux.Ejercicio = @Ejercicio 
@@ -148,6 +187,7 @@ BEGIN
     NetoMN = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
     FluctuacionMN  = 0,
     ReevaluacionMN  = 0,
+    Totalmn = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
     d.Aplica,
     d.AplicaID,
     EsCancelacion = 0,

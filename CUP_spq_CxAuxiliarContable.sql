@@ -1,12 +1,37 @@
-DECLARE 
-  @Ejercicio INT = 2016,
-  @Periodo INT = 9,
-  @Modulo CHAR(5)  = 'CXP',
-  @FechaInicio DATE
+SET ANSI_NULLS, ANSI_WARNINGS ON;
 
-  SET @FechaInicio = CAST((CAST(@Ejercicio AS VARCHAR) + '-' + CAST(@Periodo AS VARCHAR) + '-01') AS DATE)
+GO
 
+IF EXISTS (SELECT * 
+		   FROM SYSOBJECTS 
+		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarCont') AND 
+				 TYPE = 'P')
 BEGIN
+  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarCont 
+END	
+
+
+GO
+
+-- =============================================
+-- Created by:    Enrique Sierra Gtez
+-- Creation Date: 2016-10-13
+-- Last Modified: 2016-10-13 
+--
+-- Description: Obtiene los auxiliares de
+-- Cont con suficiente informacion para
+-- poder hacer el cruce contra el Modulo de un
+-- ejercicio/periodo
+-- 
+-- Example: EXEC CUP_spq_CxAuxiliarCont 'CXP', 2016, 9
+-- =============================================
+
+
+CREATE PROCEDURE dbo.CUP_spq_CxAuxiliarCont
+  @Modulo CHAR(5),
+  @Ejercicio INT,
+  @Periodo INT
+AS BEGIN 
 
   -- Contiene las cuentas contables de las que se obtendra
   -- el auxiliar.
@@ -36,14 +61,20 @@ BEGIN
 
 
   SELECT 
+    c.ID,
     d.Cuenta,
     Cta.Descripcion,
     CentroCostos = ISNULL(d.Subcuenta,''),
     Debe  = ISNULL(d.Debe,0),
     Haber = ISNULL(d.Haber,0), 
+    Neto = CASE ISNULL(Cta.EsAcreedora,0)
+              WHEN 1 THEN 
+                ISNULL(d.Haber,0) - ISNULL(d.Debe,0)
+              ELSE
+                ISNULL(d.Debe,0) - ISNULL(Haber,0)
+            END,
     Sucursal = d.SucursalContable,
     d.FechaContable,
-    c.ID,
     c.Mov,
     c.MovId,
     c.Referencia,
