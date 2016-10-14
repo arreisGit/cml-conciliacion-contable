@@ -10,10 +10,10 @@ GO
 -- Description: Desglosa las Diferencias Cambiarias 
 --              de los Movimientos en Cxc y CxP.
 -- 
- Example: SELECT * 
-          FROM  CUP_v_CxDiferenciasCambiarias
-          WHERE Modulo = 'CXP'
-            AND ModuloID = 108870
+-- Example: SELECT * 
+--          FROM  CUP_v_CxDiferenciasCambiarias
+--          WHERE Modulo = 'CXP'
+--          AND ModuloID = 108870
 --
 --
 -- =============================================
