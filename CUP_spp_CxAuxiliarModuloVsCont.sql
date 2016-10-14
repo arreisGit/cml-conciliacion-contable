@@ -142,10 +142,17 @@ AS BEGIN
   INSERT INTO #CxAuxiliarCont
   EXEC CUP_spq_CxAuxiliarCont @Modulo, @Ejercicio, @Periodo
 
+
+  SELECT 
+    Debe = SUM(ISNULL(Debe,0)),
+    Haber = SUM(ISNULL(Haber,0)),
+    Neto = SUM(ISNULL(Neto)))
+  FROM 
+    #CxAuxiliarCont
+
   -- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
   ;WITH modulo AS ( 
   SELECT
-    AuxID,
     EsCancelacion,
     Modulo, 
     ModuloID,
@@ -162,7 +169,6 @@ AS BEGIN
   FROM
     #CxAuxiliarModulo
   GROUP BY
-    AuxID,
     EsCancelacion,
     Modulo, 
     ModuloID,
@@ -173,7 +179,6 @@ AS BEGIN
     PolizaID   
   )
   SELECT
-    modulo.AuxID,
     modulo.EsCancelacion,
     modulo.Modulo, 
     modulo.ModuloID,
@@ -188,22 +193,20 @@ AS BEGIN
     modulo.TotalMN,
     modulo.PolizaID,
     cont.OrigenModulo,
-    cont.Neto,
-    cont.Debe,
-    cont.Haber,
-    cont.Id,
+    ContNeto =  cont.Neto,
+    ContDebe =  cont.Debe,
+    ContHaber = cont.Haber,
+    ContID =cont.Id,
     cont.Cuenta,
     cont.Descripcion,
-    cont.Mov,
-    cont.Movid,
+    PolizaMov = cont.Mov,
+    PolizaMovID =cont.Movid,
     cont.OrigenMov,
     cont.OrigenMovId
   FROM 
     modulo
   FULL OUTER JOIN #CxAuxiliarCont cont ON modulo.PolizaID = cont.ID
-  ORDER BY  
-    modulo.ModuloID,
-    cont.ID,
-    cont.Cuenta
-
+  ORDER BY
+    cont.OrigenModulo,
+    ModuloID      
 END
