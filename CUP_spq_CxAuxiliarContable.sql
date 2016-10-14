@@ -59,25 +59,24 @@ AS BEGIN
     	
   END
 
-
   SELECT 
     c.ID,
     d.Cuenta,
-    Cta.Descripcion,
+    Descripcion = ISNULL(Cta.Descripcion,''),
     CentroCostos = ISNULL(d.Subcuenta,''),
-    Debe  = ISNULL(d.Debe,0),
-    Haber = ISNULL(d.Haber,0), 
-    Neto = CASE ISNULL(Cta.EsAcreedora,0)
+    Debe  = SUM(ISNULL(d.Debe,0)),
+    Haber = SUM(ISNULL(d.Haber,0)), 
+    Neto = SUM(CASE ISNULL(Cta.EsAcreedora,0)
               WHEN 1 THEN 
                 ISNULL(d.Haber,0) - ISNULL(d.Debe,0)
               ELSE
                 ISNULL(d.Debe,0) - ISNULL(Haber,0)
-            END,
+            END),
     Sucursal = d.SucursalContable,
     d.FechaContable,
     c.Mov,
     c.MovId,
-    c.Referencia,
+    Referencia= ISNULL(c.Referencia,''),
     OrigenModulo = c.OrigenTipo,
     OrigenModuloID = mf.OID,
     c.Origen,
@@ -97,6 +96,18 @@ AS BEGIN
     c.Estatus = 'CONCLUIDO'
   AND YEAR(d.FechaContable) = @Ejercicio
   AND MONTH(d.FechaContable) = @Periodo
-
-
+  GROUP BY
+    c.ID,
+    d.Cuenta,
+    ISNULL(Cta.Descripcion,''),
+    ISNULL(d.Subcuenta,''),
+    d.SucursalContable,
+    d.FechaContable,
+    c.Mov,
+    c.MovId,
+    ISNULL(c.Referencia,''),
+    c.OrigenTipo,
+    mf.OID,
+    c.Origen,
+    c.OrigenId
 END
