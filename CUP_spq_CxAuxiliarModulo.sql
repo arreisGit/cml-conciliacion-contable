@@ -60,10 +60,8 @@ AS BEGIN
     AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio,4,1),
     NetoMN =  ROUND(ISNULL(calc.Neto,0) * aux.TipoCambio,4,1),
     FluctuacionMN  = ROUND(calc.FluctuacionMN * -1,4,1),
-    ReevaluacionMN  = ROUND(ISNULL(revsMes.Importe,0),4,1),
     TotalMN = ROUND(  (calc.Neto * aux.TipoCambio)
-                    + (calc.FluctuacionMN * -1)
-                    + ISNULL(revsMes.Importe,0),4,1),
+                    + (calc.FluctuacionMN * -1),4,1),
     aux.Aplica,
     aux.AplicaID,
     aux.EsCancelacion,
@@ -96,22 +94,6 @@ AS BEGIN
                                             AND fc.ModuloID = aux.ModuloId
                                             AND fc.Documento = aux.Aplica
                                             AND fc.DocumentoID = aux.AplicaID
-  -- Reevaluaciones del MES 
-  OUTER APPLY ( SELECT
-                    Importe = SUM(ISNULL(revsD.Importe,0))              
-                 FROM 
-                    Cxp revs 
-                JOIN CxpD revsD ON  revsD.Id = revs.ID
-                JOIN Movtipo revsT ON revst.Modulo = 'CXP'
-                                  AND revst.Mov =   revs.Mov
-                WHERE
-                  revsT.Clave = 'CXP.RE'
-                AND revs.Estatus = 'CONCLUIDO'
-                AND revs.Ejercicio = @Ejercicio
-                AND revs.Periodo = @Periodo
-                AND revsD.Aplica = aux.Mov
-                AND revsD.AplicaID = aux.MovId  
-               ) revsMes
  -- Campos Calculados
    CROSS APPLY ( SELECT   
                    Neto = ISNULL(aux.Cargo,0) - ISNULL( aux.Abono,0),
@@ -150,7 +132,8 @@ AS BEGIN
                                     )
                                   )
               WHERE 
-                mf.DModulo = 'CONT'
+                aux.Cuenta <> 'SHCP' -- Los movs de SCHP no deberian generar Poliza hoy en dia.
+              AND mf.DModulo = 'CONT'
               AND mf.DID = ISNULL(ISNULL(p.ContID,c.ContID),g.ContID)
               ORDER BY
                 df.DID DESC
@@ -164,8 +147,7 @@ AS BEGIN
   AND aux.Modulo = 'CXP'
 
   UNION
-  -- Reevaluaciones de Movimientos Con saldo anterior
-  -- al ejercicio / periodo consultado.
+  -- Reevaluaciones de Movimientos del mes
   SELECT 
     AuxID = NULL,
     Fecha = CAST(p.FechaEmision AS DATE),
@@ -186,7 +168,6 @@ AS BEGIN
     AbonoMN = ISNULL(impCargoAbono.Abono,0),
     NetoMN = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
     FluctuacionMN  = 0,
-    ReevaluacionMN  = 0,
     Totalmn = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
     d.Aplica,
     d.AplicaID,
@@ -205,8 +186,6 @@ AS BEGIN
   JOIN CxpD d ON d.Id = p.ID
   JOIN movtipo t ON t.Modulo = 'CXP'
                 AND t.Mov  = p.Mov 
-  JOIN Cxp doc ON doc.Mov = d.Aplica
-              AND doc.MovID = d.AplicaID
   -- Cargos Abonos ( para mantener el formato del auxiliar )
   CROSS APPLY (
                 SELECT 
@@ -229,6 +208,5 @@ AS BEGIN
   AND p.Estatus = 'CONCLUIDO'
   AND p.Ejercicio = @Ejercicio
   AND p.Periodo = @Periodo
-  AND CAST(doc.FechaEmision AS DATE) < @FechaInicio
 
 END

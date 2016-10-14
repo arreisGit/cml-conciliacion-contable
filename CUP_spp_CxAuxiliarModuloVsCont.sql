@@ -142,14 +142,6 @@ AS BEGIN
   INSERT INTO #CxAuxiliarCont
   EXEC CUP_spq_CxAuxiliarCont @Modulo, @Ejercicio, @Periodo
 
-
-  SELECT 
-    Debe = SUM(ISNULL(Debe,0)),
-    Haber = SUM(ISNULL(Haber,0)),
-    Neto = SUM(ISNULL(Neto)))
-  FROM 
-    #CxAuxiliarCont
-
   -- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
   ;WITH modulo AS ( 
   SELECT
