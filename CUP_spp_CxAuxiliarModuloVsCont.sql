@@ -82,8 +82,12 @@ AS BEGIN
             ModuloID,
             Mov,
             Movid,
+            Proveedor,
             Aplica,
             AplicaID,
+            EsCancelacion,
+            Moneda,
+            TipoCambio,
             Neto,
             NetoMN,
             FluctuacionMN,
@@ -108,7 +112,7 @@ AS BEGIN
     Haber DECIMAL(18,4) NOT NULL,
     Neto DECIMAL(18,4) NOT NULL,
     Sucursal INT NULL,
-    FechaContable DATE,
+    FechaContable DATE NOT NULL,
     Mov CHAR(20) NOT NULL,
     MovId VARCHAR(20) NULL,
     Referencia VARCHAR(50) NULL,
@@ -124,7 +128,7 @@ AS BEGIN
 
     
   CREATE NONCLUSTERED INDEX [IX_#CxAuxiliarCont_OrigenModulo_OrigenModuloID]
-  ON [dbo].[#CxAuxiliarModulo] ( OrigenModulo, OrigenModuloID )
+  ON [dbo].[#CxAuxiliarCont] ( OrigenModulo, OrigenModuloID )
   INCLUDE ( 
             ID,
             Cuenta,
@@ -139,9 +143,67 @@ AS BEGIN
   EXEC CUP_spq_CxAuxiliarCont @Modulo, @Ejercicio, @Periodo
 
   -- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
+  ;WITH modulo AS ( 
   SELECT
-     *
+    AuxID,
+    EsCancelacion,
+    Modulo, 
+    ModuloID,
+    Mov,
+    Movid,
+    Proveedor,
+    Moneda,
+    Neto = SUM(ISNULL(Neto,0)),
+    NetoMN = SUM(ISNULL(NetoMN,0)),
+    Fluctuacionmn = SUM(ISNULL(FluctuacionMN,0)),
+    ReevaluacionMN = SUM(ISNULL(ReevaluacionMN,0)),
+    TotalMN = SUM(ISNULL(TotalMN,0)),
+    PolizaID
+  FROM
+    #CxAuxiliarModulo
+  GROUP BY
+    AuxID,
+    EsCancelacion,
+    Modulo, 
+    ModuloID,
+    Mov,
+    Movid,
+    Proveedor,
+    Moneda,
+    PolizaID   
+  )
+  SELECT
+    modulo.AuxID,
+    modulo.EsCancelacion,
+    modulo.Modulo, 
+    modulo.ModuloID,
+    modulo.Mov,
+    modulo.Movid,
+    modulo.Proveedor,
+    modulo.Moneda,
+    modulo.Neto,
+    modulo.NetoMN,
+    modulo.FluctuacionMN,
+    modulo.ReevaluacionMN,
+    modulo.TotalMN,
+    modulo.PolizaID,
+    cont.OrigenModulo,
+    cont.Neto,
+    cont.Debe,
+    cont.Haber,
+    cont.Id,
+    cont.Cuenta,
+    cont.Descripcion,
+    cont.Mov,
+    cont.Movid,
+    cont.OrigenMov,
+    cont.OrigenMovId
   FROM 
-    #CxAuxiliarModulo modulo
+    modulo
   FULL OUTER JOIN #CxAuxiliarCont cont ON modulo.PolizaID = cont.ID
+  ORDER BY  
+    modulo.ModuloID,
+    cont.ID,
+    cont.Cuenta
+
 END
