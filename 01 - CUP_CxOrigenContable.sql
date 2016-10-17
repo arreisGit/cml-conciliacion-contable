@@ -1,7 +1,7 @@
 SET ANSI_NULLS, ANSI_WARNINGS ON;
 
-IF OBJECT_ID('dbo.CUP_CxRelacionAuxiliarModulo', 'U') IS NOT NULL 
-  DROP TABLE dbo.CUP_CxRelacionAuxiliarModulo; 
+IF OBJECT_ID('dbo.CUP_CxOrigenContable', 'U') IS NOT NULL 
+  DROP TABLE dbo.CUP_CxOrigenContable; 
 
 GO
 
@@ -23,10 +23,7 @@ GO
 --
 -- =============================================
 
-IF OBJECT_ID('dbo.CUP_CxRelacionAuxiliarModulo', 'U') IS NOT NULL 
-  DROP TABLE dbo.CUP_CxRelacionAuxiliarModulo; 
-
-CREATE TABLE dbo.CUP_CxRelacionAuxiliarModulo
+CREATE TABLE dbo.CUP_CxOrigenContable
 (
   ID INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
 	AuxModulo CHAR(5)  NOT NULL,
@@ -34,11 +31,11 @@ CREATE TABLE dbo.CUP_CxRelacionAuxiliarModulo
   Modulo    CHAR(5)  NOT NULL,
   Mov       CHAR(20) NOT NULL,
   ValidarOrigen BIT  NOT NULL
-                CONSTRAINT [DF_CUP_CxRelacionAuxiliarModulo_ValidarOrigen]
+                CONSTRAINT [DF_CUP_CxOrigenContable_ValidarOrigen]
                 DEFAULT 0,
   OrigenTipo CHAR(5) NULL,
   Origen     CHAR(20) NULL,
-  CONSTRAINT AK_CUP_CxRelacionAuxiliarModulo_Modulo_Mov UNIQUE 
+  CONSTRAINT AK_CUP_CxOrigenContable_Modulo_Mov UNIQUE 
                                                        (
                                                          Modulo,
                                                          Mov
@@ -46,8 +43,8 @@ CREATE TABLE dbo.CUP_CxRelacionAuxiliarModulo
 ) 
 
 
-CREATE NONCLUSTERED INDEX [IX_CUP_CxRelacionAuxiliarModulo_Modulo_Mov]
-ON [dbo].[CUP_CxRelacionAuxiliarModulo] ( Modulo, Mov )
+CREATE NONCLUSTERED INDEX [IX_CUP_CxOrigenContable_Modulo_Mov]
+ON [dbo].[CUP_CxOrigenContable] ( Modulo, Mov )
 INCLUDE ( 
           ID,
           AuxModulo,
@@ -57,8 +54,8 @@ INCLUDE (
           Origen
         )
 
-CREATE NONCLUSTERED INDEX [IX_CUP_CxRelacionAuxiliarModulo_AuxModulo_AuxMov]
-ON [dbo].[CUP_CxRelacionAuxiliarModulo] ( AuxModulo, AuxMov )
+CREATE NONCLUSTERED INDEX [IX_CUP_CxOrigenContable_AuxModulo_AuxMov]
+ON [dbo].[CUP_CxOrigenContable] ( AuxModulo, AuxMov )
 INCLUDE ( 
           ID,
           Modulo,
