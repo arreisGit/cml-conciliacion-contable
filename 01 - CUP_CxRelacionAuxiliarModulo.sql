@@ -33,6 +33,11 @@ CREATE TABLE dbo.CUP_CxRelacionAuxiliarModulo
 	AuxMov    CHAR(20) NOT NULL,
   Modulo    CHAR(5)  NOT NULL,
   Mov       CHAR(20) NOT NULL,
+  ValidarOrigen BIT  NOT NULL
+                CONSTRAINT [DF_CUP_CxRelacionAuxiliarModulo_ValidarOrigen]
+                DEFAULT 0,
+  OrigenTipo CHAR(5) NULL,
+  Origen     CHAR(20) NULL,
   CONSTRAINT AK_CUP_CxRelacionAuxiliarModulo_Modulo_Mov UNIQUE 
                                                        (
                                                          Modulo,
@@ -46,7 +51,10 @@ ON [dbo].[CUP_CxRelacionAuxiliarModulo] ( Modulo, Mov )
 INCLUDE ( 
           ID,
           AuxModulo,
-          AuxMov
+          AuxMov,
+          ValidarOrigen,
+          OrigenTipo,
+          Origen
         )
 
 CREATE NONCLUSTERED INDEX [IX_CUP_CxRelacionAuxiliarModulo_AuxModulo_AuxMov]
@@ -54,5 +62,8 @@ ON [dbo].[CUP_CxRelacionAuxiliarModulo] ( AuxModulo, AuxMov )
 INCLUDE ( 
           ID,
           Modulo,
-          Mov
+          Mov,
+          ValidarOrigen,
+          OrigenTipo,
+          Origen
         )
