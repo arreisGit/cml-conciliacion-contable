@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarModulo') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliar') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarModulo 
+  DROP PROCEDURE dbo.CUP_spq_CxAuxiliar 
 END	
 
 
@@ -22,11 +22,11 @@ GO
 -- Cxc o Cxp con suficiente informacion para
 -- poder hacer el cruce contra Contabilidad
 -- 
--- Example: EXEC CUP_spq_CxAuxiliarModulo 'CXP', 2016, 9
+-- Example: EXEC CUP_spq_CxAuxiliar 'CXP', 2016, 9
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_spq_CxAuxiliarModulo
+CREATE PROCEDURE dbo.CUP_spq_CxAuxiliar
   @Modulo CHAR(5),
   @Ejercicio INT,
   @Periodo INT
