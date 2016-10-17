@@ -16,12 +16,12 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-13
--- Last Modified: 2016-10-13 
+-- Last Modified: 2016-10-17 
 --
 -- Description: Obtiene los auxiliares de
--- Cxc o Cxp con suficiente informacion para
--- poder hacer el cruce contra Contabilidad
--- 
+-- Cxc o Cxp con la suficiente informacion
+-- para poder verificar el saldo de la cartera
+--
 -- Example: EXEC CUP_spq_CxAuxiliar 'CXP', 2016, 9
 -- =============================================
 
