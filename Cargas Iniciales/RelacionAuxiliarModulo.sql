@@ -14,7 +14,7 @@ VALUES
 ('CXP','Correccion Rebate','CXP','Correccion Rebate'),
 ('CXP','Credito Proveedor','CXP','Credito Proveedor'),
 ('CXP','Credito Proveedor','COMS','Devolucion Compra'),
-('CXP','Credito Proveedor','GAS','Devolucion Gasto'),
+('CXP','Credito Proveedor','COMS','Bonificacion Compra'),
 ('CXP','Devolucion Gasto','CXP','Devolucion Gasto'),
 ('CXP','Entrada Compra','CXP','Entrada Compra'),
 ('CXP','Entrada Maquila','CXP','Entrada Maquila'),
@@ -35,8 +35,8 @@ VALUES
 ('CXP','Entrada Servicio','CXP','Entrada Servicio'),
 ('CXP','Gasto Prorrateado','GAS','Gasto'),
 ('CXP','Gastos Generales','CXP','Gastos Generales'),
-('CXP','Reevaluacion','Cxp','Reevaluacion'),
-('CXP','Reevaluacion Credito','Cxp','Reevaluacion Credito')
+('CXP','Reevaluacion','CXP','Reevaluacion'),
+('CXP','Reevaluacion Credito','CXP','Reevaluacion Credito')
 
 SELECT
   ID,
@@ -46,3 +46,5 @@ SELECT
   Mov
 FROM
   CUP_CxRelacionAuxiliarModulo
+ORDER BY
+  ID
