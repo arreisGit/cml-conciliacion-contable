@@ -38,7 +38,10 @@ CREATE TABLE dbo.CUP_CxOrigenContable
   CONSTRAINT AK_CUP_CxOrigenContable_Modulo_Mov UNIQUE 
                                                        (
                                                          Modulo,
-                                                         Mov
+                                                         Mov,
+                                                         ValidarOrigen,
+                                                         OrigenTipo,
+                                                         Origen
                                                        )  
 ) 
 
