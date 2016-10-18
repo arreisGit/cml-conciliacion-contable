@@ -30,6 +30,9 @@ CREATE TABLE dbo.CUP_CxOrigenContable
 	AuxMov    CHAR(20) NOT NULL,
   Modulo    CHAR(5)  NOT NULL,
   Mov       CHAR(20) NOT NULL,
+  UsarAuxiliarNeto BIT NOT NULL
+                   CONSTRAINT [DF_CUP_CxOrigenContable_UsarAuxiliarNeto]
+                   DEFAULT 0,
   ValidarOrigen BIT  NOT NULL
                 CONSTRAINT [DF_CUP_CxOrigenContable_ValidarOrigen]
                 DEFAULT 0,
@@ -52,6 +55,7 @@ INCLUDE (
           ID,
           AuxModulo,
           AuxMov,
+          UsarAuxiliarNeto,
           ValidarOrigen,
           OrigenTipo,
           Origen
@@ -63,6 +67,7 @@ INCLUDE (
           ID,
           Modulo,
           Mov,
+          UsarAuxiliarNeto,
           ValidarOrigen,
           OrigenTipo,
           Origen

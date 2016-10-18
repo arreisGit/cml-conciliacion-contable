@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarModulo') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarModuloCxp') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarModulo 
+  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarModuloCxp 
 END	
 
 
@@ -19,11 +19,12 @@ GO
 -- Last Modified: 2016-10-17 
 --
 -- Description: Obtiene los movimientos que componen
--- el auxiliar de Cxc/Cxp, con la suficiente informacion
+-- el auxiliar Cxp, directamente del modulo tal cual de 
+-- cxp y con la suficiente informacion
 -- para poderlos cruzar "lado a lado" con su póliza 
 -- contable.
 -- 
--- Example: EXEC CUP_spq_CxAuxiliarModulo 'CXP', 2016, 9
+-- Example: EXEC CUP_spq_CxAuxiliarModuloCxp 'CXP', 2016, 9
 -- =============================================
 
 
@@ -63,8 +64,8 @@ AS BEGIN
     ( 'CANCELADO', 1 )
 
   SELECT
-    origenCont.AuxModulo,
-    origenCont.AuxMov,
+    AuxiliarModulo = origenCont.AuxModulo,
+    AuxiliaMov = origenCont.AuxMov,
     m.Sucursal,
     m.FechaEmision,
     m.Proveedor,
@@ -139,5 +140,17 @@ AS BEGIN
   AND m.Ejercicio = @Ejercicio
   AND m.Periodo = @Periodo
   AND m.Estatus IN ('PENDIENTE','CANCELADO','CONCLUIDO')
+
+  UNION 
+
+  --  Aplicaciones: El movimiento de Aplicacion es un poco delicado,
+  --  ya que no se debe tomar el saldo total del movimiento como afectacion 
+  --  del saldo, en realidad solo se toma la diferencia entre el  cruze del Aplica
+  --  y el movAplica. Por esta razon se incluye en la lista pero tomando en cuenta
+  --  el Neto de Auxiliares.
+  SELECT 
+    *
+
+
   
 END
