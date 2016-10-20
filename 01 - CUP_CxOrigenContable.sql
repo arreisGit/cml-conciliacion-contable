@@ -8,7 +8,7 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-14
--- Last Modified: 2016-10-14 
+-- Last Modified: 2016-10-18 
 --
 -- Description: Tabla encargada de contener
 -- la relacion entre los Auxiliares de Cxc y Cxp
@@ -30,6 +30,7 @@ CREATE TABLE dbo.CUP_CxOrigenContable
 	AuxMov    CHAR(20) NOT NULL,
   Modulo    CHAR(5)  NOT NULL,
   Mov       CHAR(20) NOT NULL,
+  Factor     SMALLINT NOT NULL,    
   UsarAuxiliarNeto BIT NOT NULL
                    CONSTRAINT [DF_CUP_CxOrigenContable_UsarAuxiliarNeto]
                    DEFAULT 0,
@@ -55,6 +56,7 @@ INCLUDE (
           ID,
           AuxModulo,
           AuxMov,
+          Factor,
           UsarAuxiliarNeto,
           ValidarOrigen,
           OrigenTipo,
@@ -67,6 +69,7 @@ INCLUDE (
           ID,
           Modulo,
           Mov,
+          Factor,
           UsarAuxiliarNeto,
           ValidarOrigen,
           OrigenTipo,
