@@ -22,7 +22,7 @@ GO
 -- Cxc o Cxp con la suficiente informacion
 -- para poder verificar el saldo de la cartera
 --
--- Example: EXEC CUP_spq_CxAuxiliar 'CXP', 2016, 9
+-- Example: EXEC CUP_spq_CxAuxiliar 'CXP', 2016,9
 -- =============================================
 
 
@@ -59,9 +59,11 @@ AS BEGIN
     CargoMN = ROUND(ISNULL(aux.Cargo,0) * aux.TipoCambio,4,1),
     AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio,4,1),
     NetoMN =  ROUND(ISNULL(calc.Neto,0) * aux.TipoCambio,4,1),
-    FluctuacionMN  = ROUND(calc.FluctuacionMN * -1,4,1),
-    TotalMN = ROUND(  (calc.Neto * aux.TipoCambio)
-                    + (calc.FluctuacionMN * -1),4,1),
+    FluctuacionMN  = ROUND(calc.FluctuacionMN * -1 * ISNULL(fctorCanc.Factor,1),4,1),
+    TotalMN = ROUND(  
+                    (calc.Neto * aux.TipoCambio)
+                  + (calc.FluctuacionMN * -1 * ISNULL(fctorCanc.Factor,1))
+              ,4,1),
     aux.Aplica,
     aux.AplicaID,
     aux.EsCancelacion,
@@ -89,6 +91,14 @@ AS BEGIN
   LEFT JOIN Gasto g ON 'GAS' = p.OrigenTipo
                     AND g.Mov = p.Origen
                     AND g.MovID = p.OrigenID
+  -- Factor Canceclacion
+  CROSS APPLY(SELECT
+               Factor  = CASE ISNULL(aux.EsCancelacion,0) 
+                           WHEN 1 THEN
+                             -1
+                           ELSE 
+                              1
+                          END) fctorCanc 
   -- Fluctuacion Cambiaria
   LEFT JOIN CUP_v_CxDiferenciasCambiarias fc ON fc.Modulo = aux.Modulo
                                             AND fc.ModuloID = aux.ModuloId
@@ -208,5 +218,4 @@ AS BEGIN
   AND p.Estatus = 'CONCLUIDO'
   AND p.Ejercicio = @Ejercicio
   AND p.Periodo = @Periodo
-
 END
