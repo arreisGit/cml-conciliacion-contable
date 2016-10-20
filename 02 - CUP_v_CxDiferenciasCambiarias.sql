@@ -90,7 +90,7 @@ CROSS APPLY(
             ) importes_calculo
 
 WHERE 
-    c.Estatus = 'CONCLUIDO'
+    c.Estatus IN ('CONCLUIDO','CANCELADO')
 AND c.ClienteMoneda <> 'Pesos'
 AND t.clave IN ('CXC.C','CXC.ANC')
 AND ISNULL(d.Importe,0) <> 0
@@ -163,7 +163,7 @@ CROSS APPLY(
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.TipoCambio,4,1)
             ) importes_calculo
 WHERE 
-   c.Estatus = 'CONCLUIDO'
+   c.Estatus IN ('CONCLUIDO','CANCELADO')
 AND c.Moneda <> 'Pesos'
 AND t.clave IN ('CXC.C','CXC.ANC')
 AND ISNULL(c.Importe,0) <> 0
@@ -233,7 +233,7 @@ CROSS APPLY(
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
             ) importes_calculo
 WHERE 
-    p.Estatus = 'CONCLUIDO'
+    p.Estatus IN ('CONCLUIDO','CANCELADO')
 AND p.ProveedorMoneda <> 'Pesos'
 AND t.clave IN ('CXP.P','CXP.ANC')
 AND ISNULL(d.Importe,0) <> 0
@@ -306,7 +306,7 @@ CROSS APPLY(
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
             ) importes_calculo
 WHERE 
-   p.Estatus = 'CONCLUIDO'
+   p.Estatus IN('CONCLUIDO','CANCELADO')
 AND p.Moneda <> 'Pesos'
 AND t.clave IN ('CXP.P','CXP.ANC')
 AND ISNULL(p.Importe,0) <> 0
