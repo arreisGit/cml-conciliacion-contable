@@ -13,7 +13,7 @@ GO
 -- Example: SELECT * 
 --          FROM  CUP_v_CxDiferenciasCambiarias
 --          WHERE Modulo = 'CXP'
---          AND ModuloID = 108870
+--          AND ModuloID = 108192
 --
 -- =============================================
 
@@ -53,13 +53,24 @@ JOIN Movtipo t ON t.Modulo = 'CXC'
 JOIN cxcD d ON d.id = c.id
 JOIN Movtipo dt ON dt.Modulo = 'CXC'
                 AND dt.Mov = d.Aplica
-JOIN cxc origen ON origen.Mov = d.Aplica
-               AND origen.Movid = d.AplicaID
+JOIN cxc doc ON doc.Mov = d.Aplica
+            AND doc.Movid = d.AplicaID
 -- Importe Aplica 
 CROSS APPLY( SELECT   
                 FactorTC =   ROUND((c.TipoCambio / c.ClienteTipoCambio),4,1),
                 Importe =  ROUND(d.Importe * (c.TipoCambio / c.ClienteTipoCambio),4,1)
             ) importe_aplica 
+-- Origen 
+OUTER APPLY(SELECT TOP 1
+              v.FechaEmision, 
+              v.TipoCambio
+            FROM 
+              Venta v 
+            WHERE 
+              'VTAS' = doc.OrigenTipo
+            AND v.Mov = doc.Origen
+            AND v.MovID = doc.OrigenID
+            ) origen
 -- Ultima Rev
 OUTER APPLY ( SELECT TOP 1  
                 ur.ID ,
@@ -80,7 +91,7 @@ OUTER APPLY ( SELECT TOP 1
 -- Tipo de Cambio Historico
 OUTER APPLY(
             SELECT 
-              TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
+              TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
             ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
@@ -123,8 +134,8 @@ FROM
   Cxc c 
 JOIN Movtipo t ON t.Modulo = 'CXC'
               AND t.Mov = c.Mov 
-JOIN cxc origen ON origen.Mov = c.MovAplica
-                AND origen.Movid = c.MovAplicaID
+JOIN cxc doc ON doc.Mov = c.MovAplica
+            AND doc.Movid = c.MovAplicaID
 JOIN Movtipo mt ON mt.Modulo = 'CXC'
                 AND mt.Mov = c.MovAplica
 -- Importe Aplica 
@@ -134,6 +145,17 @@ CROSS APPLY( SELECT
                                 + ISNULL(c.Impuestos,0) 
                                 - ISNULL(c.Retencion,0),4,1)
             ) importe_aplica 
+-- Origen
+OUTER APPLY(SELECT TOP 1
+              v.FechaEmision, 
+              v.TipoCambio
+            FROM 
+              Venta v 
+            WHERE 
+              'VTAS' = doc.OrigenTipo
+            AND v.Mov = doc.Origen
+            AND v.MovID = doc.OrigenID
+            ) origen
 -- Ultima Rev
 OUTER APPLY ( SELECT TOP 1  
                 ur.ID ,
@@ -154,7 +176,7 @@ OUTER APPLY ( SELECT TOP 1
 -- Tipo de Cambio Historico
 OUTER APPLY(
             SELECT 
-              TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
+              TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
             ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
@@ -197,13 +219,36 @@ JOIN Movtipo t ON t.Modulo = 'Cxp'
 JOIN CxpD d ON d.id = p.id
 JOIN Movtipo dt ON dt.Modulo = 'Cxp'
                 AND dt.Mov = d.Aplica
-JOIN Cxp origen ON origen.Mov = d.Aplica
-            AND origen.Movid = d.AplicaID
+
+JOIN Cxp doc ON doc.Mov = d.Aplica
+               AND doc.Movid = d.AplicaID
 -- Importe Aplica 
 CROSS APPLY( SELECT   
                 FactorTC =   ROUND((p.TipoCambio / p.ProveedorTipoCambio),4,1),
                 Importe =  ROUND(d.Importe * (p.TipoCambio / p.ProveedorTipoCambio),4,1)
             ) importe_aplica 
+-- Origen 
+OUTER APPLY(
+            SELECT TOP 1
+              c.FechaEmision, 
+              c.TipoCambio
+            FROM 
+              Compra c 
+            WHERE 
+              'COMS' = doc.OrigenTipo
+            AND c.Mov = doc.Origen
+            AND c.MovID = doc.OrigenID
+            UNION 
+            SELECT TOP 1
+              g.FechaEmision, 
+              g.TipoCambio
+            FROM 
+              Gasto g 
+            WHERE 
+              'GAS' = doc.OrigenTipo
+            AND g.Mov = doc.Origen
+            AND g.MovID = doc.OrigenID
+            ) origen
 -- Ultima Rev
 OUTER APPLY ( SELECT TOP 1  
                 ur.ID ,
@@ -224,7 +269,7 @@ OUTER APPLY ( SELECT TOP 1
 -- Tipo de Cambio Historico
 OUTER APPLY(
             SELECT 
-              TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
+              TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
             ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 
@@ -266,8 +311,8 @@ FROM
   CXP p
 JOIN Movtipo t ON t.Modulo = 'CXP'
               AND t.Mov = p.Mov 
-JOIN CXP origen ON origen.Mov = p.MovAplica
-                AND origen.Movid = p.MovAplicaID
+JOIN CXP doc ON doc.Mov = p.MovAplica
+            AND doc.Movid = p.MovAplicaID
 JOIN Movtipo mt ON mt.Modulo = 'CXP'
                 AND mt.Mov = p.MovAplica
 -- Importe Aplica 
@@ -277,7 +322,28 @@ CROSS APPLY( SELECT
                                 + ISNULL(p.Impuestos,0) 
                                 - ISNULL(p.Retencion,0),4,1)
             ) importe_aplica 
--- Ultima Rev
+-- Origen 
+OUTER APPLY(
+            SELECT TOP 1
+              c.FechaEmision, 
+              c.TipoCambio
+            FROM 
+              Compra c 
+            WHERE 
+              'COMS' = doc.OrigenTipo
+            AND c.Mov = doc.Origen
+            AND c.MovID = doc.OrigenID
+            UNION 
+            SELECT TOP 1
+              g.FechaEmision, 
+              g.TipoCambio
+            FROM 
+              Gasto g 
+            WHERE 
+              'GAS' = doc.OrigenTipo
+            AND g.Mov = doc.Origen
+            AND g.MovID = doc.OrigenID
+            ) origen-- Ultima Rev
 OUTER APPLY ( SELECT TOP 1  
                 ur.ID ,
                 TipoCambio = ur.ProveedorTipoCambio
@@ -297,7 +363,7 @@ OUTER APPLY ( SELECT TOP 1
 -- Tipo de Cambio Historico
 OUTER APPLY(
             SELECT 
-              TipoCambio = ISNULL(ultRev.TipoCambio,origen.TipoCambio)
+              TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
             ) tcRev
 -- Importes MN para el calculo
 CROSS APPLY( 

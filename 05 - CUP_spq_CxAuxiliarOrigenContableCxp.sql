@@ -15,7 +15,6 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-17
--- Last Modified: 2016-10-17 
 --
 -- Description: Obtiene los movimientos que componen
 -- el auxiliar Cxp desde el modulo de  cxp y con la 
@@ -79,6 +78,11 @@ AS BEGIN
     ImporteTotal = conversion_doc.ImporteTotal 
                  * ISNULL(origenCont.Factor,1) 
                  * eV.Factor,
+    FluctuacionCambiariaMN = ROUND(
+                              ISNULL(fc.DiferenciaCambiaria,0)
+                            * ISNULL(origenCont.Factor,1)
+                            * eV.Factor 
+                        , 4, 1),
     ImporteTotalMN = ROUND(
                             (
                                ( conversion_doc.ImporteTotal * m.ProveedorTipoCambio )
@@ -87,20 +91,15 @@ AS BEGIN
                             * ISNULL(origenCont.Factor,1)
                             * eV.Factor 
                      , 4, 1),
-    FlutuacionCambiariaMN = ROUND(
-                                  ISNULL(fc.DiferenciaCambiaria,0)
-                                * ISNULL(origenCont.Factor,1)
-                                * eV.Factor 
-                           , 4, 1),
+
     AuxiliarModulo = origenCont.AuxModulo,
     AuxiliaMov = origenCont.AuxMov,
-    PolizaID = 
+    PolizaID =  pf.DID
   FROM 
     CUP_CxOrigenContable origenCont 
   JOIN Cxp m ON origenCont.Mov = m.Mov
   JOIN Prov ON Prov.Proveedor = m.Proveedor
   JOIN @EstatusValidos eV ON eV.Estatus = m.Estatus
-  -- Factor Ca
   -- Factor Moneda Documento
   CROSS APPLY( SELECT   
                   FactorTC =   m.TipoCambio / m.ProveedorTipoCambio,
@@ -115,7 +114,36 @@ AS BEGIN
               WHERE
                 dc.Modulo = origenCont.Modulo
               AND dc.ModuloID = m.ID) fc
-
+  -- Poliza Contable
+  OUTER APPLY( 
+               SELECT 
+                 mf.DID
+               FROM 
+                MovFlujo mf
+               WHERE 
+                 mf.DModulo = 'CONT'
+               AND mf.OModulo = origenCont.Modulo
+               AND mf.OID = m.ID               
+               AND ( 
+                      (   
+                          m.Estatus = 'CANCELADO'
+                      AND (
+                             (
+                                eV.EsCancelacion = 1 
+                             AND mf.DID = m.ContID
+                             )
+                          OR (
+                                eV.EsCancelacion = 0
+                             AND mf.DID < m.ContID
+                             )
+                          )
+                      )
+                  OR  (
+                        m.Estatus <> 'CANCELADO'
+                      AND mf.DID = m.ContID
+                      )
+                  )
+              ) pf
   WHERE
     OrigenCont.UsarAuxiliarNeto = 0
   AND origenCont.Modulo = 'CXP'
@@ -151,13 +179,18 @@ AS BEGIN
     aux.Moneda,
     aux.TipoCambio,
     ImporteTotal = SUM(ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0)),
-    ImporteTotalMN = ROUND(SUM( ( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) ) * aux.TipoCambio), 4, 1),
-    FlutuacionCambiariaMN = ROUND(
-                              SUM( ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1 * ISNULL(fctorCanc.Factor,1))
-                            ,4,1),
+    FluctuacionCambiariaMN = ROUND(
+                                  SUM( ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1 * ISNULL(fctorCanc.Factor,1))
+                                  ,4,1),
+    ImporteTotalMN = ROUND(
+                       SUM( 
+                            ( ( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) )  * aux.TipoCambio )
+                          + ( ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1 ) 
+                          )
+                     , 4, 1),
     AuxiliarModulo = origenCont.AuxModulo,
     AuxiliaMov = origenCont.AuxMov,
-    PolizaID  = 
+    PolizaID  = pf.DID
   FROM 
     CUP_CxOrigenContable origenCont
   JOIN Auxiliar aux ON aux.Modulo = origenCont.Modulo
@@ -178,6 +211,36 @@ AS BEGIN
                                             AND fc.ModuloID = aux.ModuloId
                                             AND fc.Documento = aux.Aplica
                                             AND fc.DocumentoID = aux.AplicaID
+  -- Poliza Contable
+  OUTER APPLY( 
+               SELECT TOP 1
+                 mf.DID
+               FROM 
+                MovFlujo mf
+               WHERE 
+                 mf.DModulo = 'CONT'
+               AND mf.OModulo = origenCont.Modulo
+               AND mf.OID = m.ID               
+               AND ( 
+                      (   
+                          m.Estatus = 'CANCELADO'
+                      AND (
+                             (
+                                aux.EsCancelacion = 1 
+                             AND mf.DID = m.ContID
+                             )
+                          OR (
+                                aux.EsCancelacion = 0
+                             AND mf.DID < m.ContID
+                             )
+                          )
+                      )
+                  OR  (
+                        m.Estatus <> 'CANCELADO'
+                      AND mf.DID = m.ContID
+                      )
+                  )
+              ) pf
   WHERE 
       origenCont.UsarAuxiliarNeto = 1 
   AND origenCont.Modulo = 'CXP'
@@ -192,19 +255,20 @@ AS BEGIN
         )
       )
   GROUP BY 
-    origenCont.AuxModulo,
-    origenCont.AuxMov,
+    origenCont.Modulo,
+    m.ID,
+    m.Mov,
+    m.MovId,
     aux.Sucursal,
     m.FechaEmision,
     m.Proveedor,
     REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
     Prov.Cuenta,
-    origenCont.Modulo,
-    m.ID,
-    m.Mov,
-    m.MovId,
     m.Estatus,
     aux.EsCancelacion,
     aux.Moneda,
-    aux.TipoCambio
+    aux.TipoCambio,
+      origenCont.AuxModulo,
+    origenCont.AuxMov,
+    pf.DID
 END

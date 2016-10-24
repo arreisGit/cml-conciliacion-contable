@@ -16,7 +16,7 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-13
--- Last Modified: 2016-10-13 
+-- Last Modified: 2016-10-20
 --
 -- Description: Obtiene los auxiliares de
 -- Cont con suficiente informacion para
@@ -80,7 +80,9 @@ AS BEGIN
     OrigenModulo = c.OrigenTipo,
     OrigenModuloID = mf.OID,
     c.Origen,
-    c.OrigenId
+    c.OrigenId,
+    AuxiliarModulo = ISNULL(origenCont.AuxModulo,''),
+    AuxiliarMov = ISNULL(origenCont.AuxMov,'')
   FROM 
     @CtasCont cL
   JOIN Cta ON Cta.Cuenta = cL.Cuenta
@@ -90,7 +92,9 @@ AS BEGIN
                        AND mf.DID  = c.ID
                        AND mf.OModulo = c.OrigenTipo
                        AND mf.OMov = c.Origen
-                       AND mf.OMovID = c.OrigenID  
+                       AND mf.OMovID = c.OrigenID 
+  LEFT JOIN CUP_CxOrigenContable origenCont ON origenCont.Modulo = c.OrigenTipo
+                                           AND origenCont.Mov   = c.Origen
 
   WHERE 
     c.Estatus = 'CONCLUIDO'
@@ -109,5 +113,7 @@ AS BEGIN
     c.OrigenTipo,
     mf.OID,
     c.Origen,
-    c.OrigenId
+    c.OrigenId,
+    ISNULL(origenCont.AuxModulo,''),
+    ISNULL(origenCont.AuxMov,'')
 END

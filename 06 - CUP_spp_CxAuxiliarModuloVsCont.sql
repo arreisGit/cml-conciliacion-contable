@@ -15,8 +15,7 @@ GO
 
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-13
--- Last Modified: 2016-10-13 
+-- Creation Date: 2016-10-20
 --
 -- Description: Cruza los auxiliares de
 -- Modulo y Contabilidad, sobre un Ejercicio/Periodo
@@ -24,6 +23,7 @@ GO
 -- la conciliacion.
 -- 
 -- Example: EXEC CUP_spp_CxAuxiliarModuloVsCont 'CXP', 2016, 9
+--
 -- =============================================
 
 
@@ -39,64 +39,52 @@ AS BEGIN
 
     CREATE TABLE #CxAuxiliarModulo
     (
-      AuxID INT NULL,
-      Fecha DATE NOT NULL,
+      Modulo CHAR(5) NOT NULL ,
+      ID INT NOT NULL,
+      Mov CHAR(20) NOT NULL,
+      MovId VARCHAR(20) NULL,
       Sucursal INT NOT NULL,
+      FechaEmision DATE  NOT NULL,
       Proveedor CHAR(10) NOT NULL,
       ProvNombre VARCHAR(100) NULL,
-      ProvCta VARCHAR(20) NULL,
-      Modulo CHAR(5) NOT NULL,
-      ModuloID INT NOT NULL,
-      Mov CHAR(20) NOT NULL,
-      MovID VARCHAR(20) NOT NULL,
+      ProvCuenta VARCHAR(20) NULL,
+      Estatus VARCHAR(15) NOT NULL,
+      EsCancelacion BIT NOT NULL,
       Moneda CHAR(10) NOT NULL,
       TipoCambio FLOAT NOT NULL,
-      Cargo DECIMAL(18,4) NOT NULL,
-      Abono DECIMAL(18,4) NOT NULL,
-      Neto DECIMAL(18,4) NOT NULL,
-      CargoMN DECIMAL(18,4) NOT NULL,
-      AbonoMN DECIMAL(18,4) NOT NULL,
-      NetoMN DECIMAL(18,4) NOT NULL,
-      FluctuacionMN DECIMAL(18,4) NOT NULL,
-      ReevaluacionMN DECIMAL(18,4) NOT NULL,
-      TotalMN DECIMAL(18,4) NOT NULL,
-      Aplica CHAR(20) NOT NULL,
-      AplicaID VARCHAR(20) NULL,
-      EsCancelacion BIT NOT NULL,
-      OrigenModulo CHAR(5) NULL,
-      OrigenModuloID INT NULL,
-      OrigenMov   CHAR(20) NULL,
-      OrigenMovID VARCHAR(20) NULL,
-      OrigenPoliza CHAR(5) NULL,
-      PolizaID INT NULL,
-      PolizaMov CHAR(20) NULL,
-      PolizaMovId VARCHAR(20) NULL
+      ImporteTotal DECIMAL(18,4) NOT  NULL,
+      FluctuacionCambiariaMN DECIMAL(18,4) NOT NULL,
+      ImporteTotalMN DECIMAL(18,4) NOT NULL,
+      AuxiliarModulo CHAR(5) NOT NULL,
+      AuxiliarMov CHAR(20) NOT NULL,
+      PolizaID INT NULL
     )
 
     
   CREATE NONCLUSTERED INDEX [IX_#CxAuxiliarModulo_PolizaID]
   ON [dbo].[#CxAuxiliarModulo] ( PolizaID )
-  INCLUDE ( 
-            AuxID,
-            Modulo, 
-            ModuloID,
-            Mov,
-            Movid,
-            Proveedor,
-            Aplica,
-            AplicaID,
-            EsCancelacion,
-            Moneda,
-            TipoCambio,
-            Neto,
-            NetoMN,
-            FluctuacionMN,
-            ReevaluacionMN,
-            TotalMN
-          )
-
+  INCLUDE
+  ( 
+    AuxiliarModulo,
+    AuxiliarMov,
+    Modulo,
+    ID,
+    Sucursal,
+    FechaEmision,
+    Proveedor,
+    ProvNombre,
+    ProvCuenta, 
+    Estatus,
+    EsCancelacion,
+    Moneda,
+    TipoCambio,
+    ImporteTotal,
+    FluctuacionCambiariaMN,
+    ImporteTotalMN
+  )
+          
   INSERT INTO #CxAuxiliarModulo
-  EXEC CUP_spq_CxAuxiliarModulo @Modulo, @Ejercicio, @Periodo
+  EXEC CUP_spq_CxAuxiliarOrigenContableCxp @Ejercicio, @Periodo
 
   -- 2) Obtenemos el Auxiliar de Contabilidad
   IF OBJECT_ID('tempdb..##CxAuxiliarCont') IS NOT NULL
@@ -120,6 +108,8 @@ AS BEGIN
     OrigenModuloID INT NULL,
     OrigenMov CHAR(20) NULL,
     OrigenMovId VARCHAR(20) NULL,
+    AuxiliarModulo CHAR(5) NULL,
+    AuxiliarMov VARCHAR(20) NULL,
     PRIMARY KEY ( 
                   ID,
                   Cuenta
@@ -136,69 +126,52 @@ AS BEGIN
             Haber,
             Neto,
             OrigenMov,
-            OrigenMovID
+            OrigenMovID,
+            AuxiliarModulo,
+            AuxiliarMov
           )
 
   INSERT INTO #CxAuxiliarCont
   EXEC CUP_spq_CxAuxiliarCont @Modulo, @Ejercicio, @Periodo
 
   -- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
-  ;WITH modulo AS ( 
   SELECT
-    EsCancelacion,
-    Modulo, 
-    ModuloID,
-    Mov,
-    Movid,
-    Proveedor,
-    Moneda,
-    Neto = SUM(ISNULL(Neto,0)),
-    NetoMN = SUM(ISNULL(NetoMN,0)),
-    Fluctuacionmn = SUM(ISNULL(FluctuacionMN,0)),
-    ReevaluacionMN = SUM(ISNULL(ReevaluacionMN,0)),
-    TotalMN = SUM(ISNULL(TotalMN,0)),
-    PolizaID
-  FROM
-    #CxAuxiliarModulo
-  GROUP BY
-    EsCancelacion,
-    Modulo, 
-    ModuloID,
-    Mov,
-    Movid,
-    Proveedor,
-    Moneda,
-    PolizaID   
-  )
-  SELECT
-    modulo.EsCancelacion,
-    modulo.Modulo, 
-    modulo.ModuloID,
+    modulo.Modulo,
+    modulo.ID,
     modulo.Mov,
-    modulo.Movid,
+    modulo.MovId,
+    modulo.AuxiliarModulo,
+    modulo.AuxiliarMov,    
+    modulo.Sucursal,
+    modulo.FechaEmision,
     modulo.Proveedor,
-    modulo.Moneda,
-    modulo.Neto,
-    modulo.NetoMN,
-    modulo.FluctuacionMN,
-    modulo.ReevaluacionMN,
-    modulo.TotalMN,
+    modulo.ProvNombre,
+    modulo.ProvCuenta,
+    modulo.Estatus,
+    modulo.EsCancelacion,
     modulo.PolizaID,
-    cont.OrigenModulo,
+    modulo.Moneda,
+    modulo.TipoCambio,
+    modulo.ImporteTotal,
+    modulo.FluctuacionCambiariaMN,    
+    modulo.ImporteTotalMN,
+    Diferencia = ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0),
     ContNeto =  cont.Neto,
     ContDebe =  cont.Debe,
     ContHaber = cont.Haber,
-    ContID =cont.Id,
     cont.Cuenta,
     cont.Descripcion,
+    ContID =cont.Id,
     PolizaMov = cont.Mov,
     PolizaMovID =cont.Movid,
     cont.OrigenMov,
-    cont.OrigenMovId
+    cont.OrigenMovId,
+    ContAuxMod = cont.AuxiliarModulo,
+    ContAuxMov = cont.AuxiliarMov
   FROM 
-    modulo
+    #CxAuxiliarModulo modulo
   FULL OUTER JOIN #CxAuxiliarCont cont ON modulo.PolizaID = cont.ID
   ORDER BY
-    cont.OrigenModulo,
-    ModuloID      
+    cont.AuxiliarModulo,
+    cont.AuxiliarMov  
 END
