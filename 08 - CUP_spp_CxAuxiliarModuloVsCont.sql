@@ -86,6 +86,12 @@ AS BEGIN
   INSERT INTO #CxAuxiliarModulo
   EXEC CUP_spq_CxAuxiliarOrigenContableCxp @Ejercicio, @Periodo
 
+  INSERT INTO #CxAuxiliarModulo
+  EXEC CUP_spq_CxAuxiliarOrigenContableComs @Ejercicio, @Periodo
+
+  INSERT INTO #CxAuxiliarModulo
+  EXEC CUP_spq_CxAuxiliarOrigenContableGas @Ejercicio, @Periodo
+
   -- 2) Obtenemos el Auxiliar de Contabilidad
   IF OBJECT_ID('tempdb..##CxAuxiliarCont') IS NOT NULL
     DROP TABLE #CxAuxiliarCont
@@ -132,7 +138,7 @@ AS BEGIN
           )
 
   INSERT INTO #CxAuxiliarCont
-  EXEC CUP_spq_CxAuxiliarCont @Modulo, @Ejercicio, @Periodo
+  EXEC CUP_spq_CxAuxiliarCont 'CXP', @Ejercicio, @Periodo
 
   -- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
   SELECT
