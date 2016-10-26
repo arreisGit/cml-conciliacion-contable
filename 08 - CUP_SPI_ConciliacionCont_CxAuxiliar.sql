@@ -16,11 +16,11 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-13
--- Last Modified: 2016-10-17 
 --
 -- Description: Obtiene los auxiliares de
 -- Cxc o Cxp con la suficiente informacion
 -- para poder verificar el saldo de la cartera
+-- durante la conciliacion contaable
 --
 -- Example: EXEC CUP_SPI_ConciliacionCont_CxAuxiliar 'CXP', 2016,9
 -- =============================================

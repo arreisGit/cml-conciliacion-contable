@@ -5,7 +5,7 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-10
--- Last Modified: 2016-10-10 
+--
 --
 -- Description: Desglosa las Diferencias Cambiarias 
 --              de los Movimientos en Cxc y CxP.

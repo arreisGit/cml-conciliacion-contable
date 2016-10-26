@@ -16,12 +16,11 @@ GO
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
 -- Creation Date: 2016-10-13
--- Last Modified: 2016-10-20
 --
 -- Description: Obtiene los auxiliares de
 -- Cont con suficiente informacion para
--- poder hacer el cruce contra el Modulo de un
--- ejercicio/periodo
+-- poder hacer el cruce contra los auxiliares
+-- CX  en un ejercicio/periodo especifico
 -- 
 -- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 'CXP', 2016, 9
 -- =============================================
