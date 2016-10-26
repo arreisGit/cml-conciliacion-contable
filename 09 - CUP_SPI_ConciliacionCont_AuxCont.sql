@@ -22,25 +22,32 @@ GO
 -- poder hacer el cruce contra los auxiliares
 -- CX  en un ejercicio/periodo especifico
 -- 
--- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 'CXP', 2016, 9
+-- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 63527, 1, 2016, 9
 -- =============================================
 
 
 CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCont
-  @Modulo CHAR(5),
+  @Empleado INT,
+  @Tipo INT,
   @Ejercicio INT,
   @Periodo INT
 AS BEGIN 
+
+  SET NOCOUNT ON
+
+  DELETE CUP_ConciliacionCont_AuxCont
+  WHERE Empleado = @Empleado
 
   -- Contiene las cuentas contables de las que se obtendra
   -- el auxiliar.
   DECLARE @CtasCont  TABLE
   (
     Cuenta CHAR(20) NOT NULL  PRIMARY KEY
-              
   )
 
-  IF @Modulo = 'CXP'
+
+ 
+  IF @Tipo = 1
   BEGIN
 
     INSERT INTO @CtasCont ( Cuenta)
@@ -58,7 +65,30 @@ AS BEGIN
     	
   END
 
+  INSERT INTO CUP_ConciliacionCont_AuxCont
+  (
+    Empleado,
+    ID,
+    Cuenta,
+    Descripcion,
+    CentroCostos,
+    Debe,
+    Haber,
+    Neto,
+    Sucursal,
+    FechaContable,
+    Mov,
+    MovId,
+    Referencia,
+    OrigenModulo,
+    OrigenModuloID,
+    OrigenMov,
+    OrigenMovId,
+    AuxiliarModulo,
+    AuxiliarMov
+  )
   SELECT 
+    @Empleado,
     c.ID,
     d.Cuenta,
     Descripcion = ISNULL(Cta.Descripcion,''),
@@ -66,16 +96,16 @@ AS BEGIN
     Debe  = SUM(ISNULL(d.Debe,0)),
     Haber = SUM(ISNULL(d.Haber,0)), 
     Neto = SUM(CASE ISNULL(Cta.EsAcreedora,0)
-              WHEN 1 THEN 
-                ISNULL(d.Haber,0) - ISNULL(d.Debe,0)
-              ELSE
-                ISNULL(d.Debe,0) - ISNULL(Haber,0)
-            END),
+                WHEN 1 THEN 
+                  ISNULL(d.Haber,0) - ISNULL(d.Debe,0)
+                ELSE
+                  ISNULL(d.Debe,0) - ISNULL(Haber,0)
+              END),
     Sucursal = d.SucursalContable,
     d.FechaContable,
     c.Mov,
     c.MovId,
-    Referencia= ISNULL(c.Referencia,''),
+    Referencia = cf.Referencia,
     OrigenModulo = c.OrigenTipo,
     OrigenModuloID = mf.OID,
     c.Origen,
@@ -91,9 +121,14 @@ AS BEGIN
                        AND mf.DID  = c.ID
                        AND mf.OModulo = c.OrigenTipo
                        AND mf.OMov = c.Origen
-                       AND mf.OMovID = c.OrigenID 
+                       AND mf.OMovID = c.OrigenID
   LEFT JOIN CUP_CxOrigenContable origenCont ON origenCont.Modulo = c.OrigenTipo
                                            AND origenCont.Mov   = c.Origen
+  -- Clean Fields
+  OUTER APPLY (
+                 SELECT 
+                   Referencia = ISNULL(REPLACE(REPLACE(REPLACE(c.Referencia,CHAR(13),''),CHAR(10),''),CHAR(9),''),'')
+              ) cf
 
   WHERE 
     c.Estatus = 'CONCLUIDO'
@@ -108,11 +143,12 @@ AS BEGIN
     d.FechaContable,
     c.Mov,
     c.MovId,
-    ISNULL(c.Referencia,''),
+    cf.Referencia,
     c.OrigenTipo,
     mf.OID,
     c.Origen,
     c.OrigenId,
     ISNULL(origenCont.AuxModulo,''),
     ISNULL(origenCont.AuxMov,'')
+
 END
