@@ -1,7 +1,7 @@
 SET ANSI_NULLS, ANSI_WARNINGS ON;
 
-IF OBJECT_ID('dbo.CUP_ConciliacionAuxiliarContable', 'U') IS NOT NULL 
-  DROP TABLE dbo.CUP_ConciliacionAuxiliarContable; 
+IF OBJECT_ID('dbo.CUP_ConciliacionCont_AuxCont', 'U') IS NOT NULL 
+  DROP TABLE dbo.CUP_ConciliacionCont_AuxCont; 
 
 GO
 
@@ -14,7 +14,7 @@ GO
 -- auxiliar - cont.
 -- =============================================
 
-CREATE TABLE dbo.CUP_ConciliacionAuxiliarContable
+CREATE TABLE dbo.CUP_ConciliacionCont_AuxCont
 (
   Empleado INT NOT NULL,
   ID INT NOT NULL,
@@ -43,8 +43,8 @@ CREATE TABLE dbo.CUP_ConciliacionAuxiliarContable
 ) 
 
 
-CREATE NONCLUSTERED INDEX [IX_CUP_CUP_ConciliacionAuxiliarContable_Empleado_AuxiliarModulo_AuxiliarMov]
-ON [dbo].[CUP_ConciliacionAuxiliarContable] ( Empleado, AuxiliarModulo, AuxiliarMov )
+CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxCont_Empleado_AuxiliarModulo_AuxiliarMov]
+ON [dbo].[CUP_ConciliacionCont_AuxCont] ( Empleado, AuxiliarModulo, AuxiliarMov )
 INCLUDE ( 
            Debe,
            Haber,

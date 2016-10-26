@@ -1,7 +1,7 @@
 SET ANSI_NULLS, ANSI_WARNINGS ON;
 
-IF OBJECT_ID('dbo.CUP_ConciliacionAuxiliarContableModulo', 'U') IS NOT NULL 
-  DROP TABLE dbo.CUP_ConciliacionAuxiliarContableModulo; 
+IF OBJECT_ID('dbo.CUP_ConciliacionCont_AuxModulo', 'U') IS NOT NULL 
+  DROP TABLE dbo.CUP_ConciliacionCont_AuxModulo; 
 
 GO
 
@@ -14,7 +14,7 @@ GO
 -- para poder realizar las conciliaciones contables
 -- =============================================
 
-CREATE TABLE dbo.CUP_ConciliacionAuxiliarContableModulo
+CREATE TABLE dbo.CUP_ConciliacionCont_AuxModulo
 (
   Empleado INT NOT NULL,
   Modulo CHAR(5) NOT NULL ,
@@ -37,8 +37,8 @@ CREATE TABLE dbo.CUP_ConciliacionAuxiliarContableModulo
   PolizaID INT NULL
 ) 
 
-CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionAuxiliarContableModulo_Empleado]
-ON [dbo].[CUP_ConciliacionAuxiliarContableModulo] ( Empleado )
+CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxModulo_Empleado]
+ON [dbo].[CUP_ConciliacionCont_AuxModulo] ( Empleado )
 INCLUDE ( 
           Modulo,
           Id,
@@ -61,8 +61,8 @@ INCLUDE (
         )
 
 
-CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionAuxiliarContableModulo_Empleado_PolizaID]
-ON [dbo].[CUP_ConciliacionAuxiliarContableModulo] ( Empleado, PolizaID )
+CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxModulo_Empleado_PolizaID]
+ON [dbo].[CUP_ConciliacionCont_AuxModulo] ( Empleado, PolizaID )
 INCLUDE ( 
           Modulo,
           Id,

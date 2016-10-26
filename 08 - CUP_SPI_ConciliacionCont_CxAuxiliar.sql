@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliar') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_SPI_ConciliacionCont_CxAuxiliar') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_spq_CxAuxiliar 
+  DROP PROCEDURE dbo.CUP_SPI_ConciliacionCont_CxAuxiliar 
 END	
 
 
@@ -22,11 +22,11 @@ GO
 -- Cxc o Cxp con la suficiente informacion
 -- para poder verificar el saldo de la cartera
 --
--- Example: EXEC CUP_spq_CxAuxiliar 'CXP', 2016,9
+-- Example: EXEC CUP_SPI_ConciliacionCont_CxAuxiliar 'CXP', 2016,9
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_spq_CxAuxiliar
+CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_CxAuxiliar
   @Modulo CHAR(5),
   @Ejercicio INT,
   @Periodo INT

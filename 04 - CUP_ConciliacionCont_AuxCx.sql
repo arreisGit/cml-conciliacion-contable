@@ -1,7 +1,7 @@
 SET ANSI_NULLS, ANSI_WARNINGS ON;
 
-IF OBJECT_ID('dbo.CUP_ConciliacionCxAuxiliar', 'U') IS NOT NULL 
-  DROP TABLE dbo.CUP_ConciliacionCxAuxiliar; 
+IF OBJECT_ID('dbo.CUP_ConciliacionCont_AuxCx', 'U') IS NOT NULL 
+  DROP TABLE dbo.CUP_ConciliacionCont_AuxCx; 
 
 GO
 
@@ -16,7 +16,7 @@ GO
 --
 -- =============================================
 
-CREATE TABLE dbo.CUP_ConciliacionCxAuxiliar
+CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
 (
   Empleado INT NOT NULL,
   AuxID INT NULL,
@@ -44,8 +44,8 @@ CREATE TABLE dbo.CUP_ConciliacionCxAuxiliar
   OrigenMovID VARCHAR(20) NULL
 ) 
 
-CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCxAuxiliar_Empleado]
-ON [dbo].[CUP_ConciliacionCxAuxiliar] ( Empleado )
+CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxCx_Empleado]
+ON [dbo].[CUP_ConciliacionCont_AuxCx] ( Empleado )
 INCLUDE ( 
           AuxId,
           Fecha,
@@ -69,8 +69,8 @@ INCLUDE (
         )
 
 
-CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCxAuxiliar_Modulo_Mov]
-ON [dbo].[CUP_ConciliacionCxAuxiliar] ( Modulo, Mov )
+CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxCx_Modulo_Mov]
+ON [dbo].[CUP_ConciliacionCont_AuxCx] ( Modulo, Mov )
 INCLUDE ( 
           Fecha,
           Sucursal,

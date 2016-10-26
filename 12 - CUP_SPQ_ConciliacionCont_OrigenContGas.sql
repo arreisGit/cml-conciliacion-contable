@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarOrigenContableGas') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_SPQ_ConciliacionCont_OrigenContGas') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarOrigenContableGas 
+  DROP PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContGas 
 END	
 
 GO
@@ -21,11 +21,11 @@ GO
 -- suficiente iformacion para poderlos cruzar 
 -- "lado a lado" con su póliza  contable.
 -- 
--- Example: EXEC CUP_spq_CxAuxiliarOrigenContableGas 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContGas 2016, 9
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_spq_CxAuxiliarOrigenContableGas
+CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContGas
   @Ejercicio INT,
   @Periodo INT
 AS BEGIN 

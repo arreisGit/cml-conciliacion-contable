@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_spq_CxAuxiliarCont') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_SPI_ConciliacionCont_AuxCont') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_spq_CxAuxiliarCont 
+  DROP PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCont 
 END	
 
 
@@ -23,11 +23,11 @@ GO
 -- poder hacer el cruce contra el Modulo de un
 -- ejercicio/periodo
 -- 
--- Example: EXEC CUP_spq_CxAuxiliarCont 'CXP', 2016, 9
+-- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 'CXP', 2016, 9
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_spq_CxAuxiliarCont
+CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCont
   @Modulo CHAR(5),
   @Ejercicio INT,
   @Periodo INT

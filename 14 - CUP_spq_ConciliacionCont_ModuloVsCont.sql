@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_spp_CxAuxiliarModuloVsCont') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_SPQ_ConciliacionCont_ModuloVsCont') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_spp_CxAuxiliarModuloVsCont 
+  DROP PROCEDURE dbo.CUP_SPQ_ConciliacionCont_ModuloVsCont 
 END	
 
 
@@ -22,12 +22,12 @@ GO
 -- y con la suficiente informacion para facilitar  
 -- la conciliacion.
 -- 
--- Example: EXEC CUP_spp_CxAuxiliarModuloVsCont 'CXP', 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 'CXP', 2016, 9
 --
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_spp_CxAuxiliarModuloVsCont
+CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_ModuloVsCont
   @Modulo CHAR(5),
   @Ejercicio INT,
   @Periodo INT
@@ -93,7 +93,7 @@ AS BEGIN
   EXEC CUP_spq_CxAuxiliarOrigenContableGas @Ejercicio, @Periodo
 
   -- 2) Obtenemos el Auxiliar de Contabilidad
-  IF OBJECT_ID('tempdb..##CxAuxiliarCont') IS NOT NULL
+  IF OBJECT_ID('tempdb..#CxAuxiliarCont') IS NOT NULL
     DROP TABLE #CxAuxiliarCont
 
   CREATE TABLE #CxAuxiliarCont
