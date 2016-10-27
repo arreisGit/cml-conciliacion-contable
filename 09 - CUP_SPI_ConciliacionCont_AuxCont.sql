@@ -88,7 +88,7 @@ AS BEGIN
     AuxiliarMov
   )
   SELECT 
-    @Empleado,
+    Empleado = @Empleado,
     c.ID,
     d.Cuenta,
     Descripcion = ISNULL(Cta.Descripcion,''),

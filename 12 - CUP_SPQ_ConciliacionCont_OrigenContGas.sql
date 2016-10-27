@@ -21,21 +21,17 @@ GO
 -- suficiente iformacion para poderlos cruzar 
 -- "lado a lado" con su póliza  contable.
 -- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContGas 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContGas 63527, 1, 2016, 9
 -- =============================================
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContGas
+  @Empleado   INT,
+  @Tipo      INT,
   @Ejercicio INT,
-  @Periodo INT
+  @Periodo   INT
 AS BEGIN 
 
-  DECLARE
-    @FechaInicio DATE = CAST(CAST(@Ejercicio AS VARCHAR)
-                                  + '-' 
-                                  + CAST(@Periodo AS VARCHAR)
-                                  + '-01' AS DATE)
-  
   -- Tabla utilizada a modo de "workaround" 
   -- para poder simular el efecto de "EsCancelacion"
   -- directo en el modulo.
@@ -49,28 +45,32 @@ AS BEGIN
                   EsCancelacion
                 )
   )
-  INSERT INTO @EstatusValidos
-  ( 
-    Estatus,
-    EsCancelacion,
-    Factor 
-  )
-  VALUES 
-    ( 'CONCLUIDO', 0,  1 ),
-    ( 'PENDIENTE', 0,  1 ),
-    ( 'CANCELADO', 0,  1 ), 
-    ( 'CANCELADO', 1, -1 )
+
+  IF @Tipo = 1 
+  BEGIN
+    INSERT INTO @EstatusValidos
+    ( 
+      Estatus,
+      EsCancelacion,
+      Factor 
+    )
+    VALUES 
+      ( 'CONCLUIDO', 0,  1 ),
+      ( 'PENDIENTE', 0,  1 ),
+      ( 'CANCELADO', 0,  1 ), 
+      ( 'CANCELADO', 1, -1 )
+  END
 
   SELECT
+    Empleado = @Empleado,
     origenCont.Modulo,
     m.ID,
     m.Mov,
     m.MovId,
     m.Sucursal,
     m.FechaEmision,
-    Proveedor = m.Acreedor,
-    ProvNombre =  REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
-    ProvCuenta =  Prov.Cuenta,
+    Cuenta = m.Acreedor,
+    Nombre =  REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
     m.Estatus,
     eV.EsCancelacion,
     Moneda = m.Moneda,

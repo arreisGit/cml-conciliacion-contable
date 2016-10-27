@@ -73,7 +73,7 @@ AS BEGIN
     )
     -- Detalle Auxiliar
     SELECT
-      @Empleado,
+      Empleado = @Empleado,
       AuxID  = aux.ID,
       aux.Fecha,
       aux.Sucursal,
@@ -147,7 +147,7 @@ AS BEGIN
     UNION
     -- Reevaluaciones de Movimientos del mes
     SELECT
-      @Empleado, 
+      Empleado = @Empleado, 
       AuxID = NULL,
       Fecha = CAST(p.FechaEmision AS DATE),
       p.Sucursal,

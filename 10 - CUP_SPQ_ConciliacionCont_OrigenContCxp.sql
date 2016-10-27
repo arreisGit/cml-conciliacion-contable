@@ -21,21 +21,17 @@ GO
 -- suficiente iformacion para poderlos cruzar 
 -- "lado a lado" con su póliza  contable.
 -- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContCxp 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContCxp 63527, 1, 2016, 9
 -- =============================================
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContCxp
+  @Empleado INT,
+  @Tipo INT,
   @Ejercicio INT,
   @Periodo INT
 AS BEGIN 
 
-  DECLARE
-    @FechaInicio DATE = CAST(CAST(@Ejercicio AS VARCHAR)
-                                  + '-' 
-                                  + CAST(@Periodo AS VARCHAR)
-                                  + '-01' AS DATE)
-  
   -- Tabla utilizada a modo de "workaround" 
   -- para poder simular el efecto de "EsCancelacion"
   -- directo en el modulo.
@@ -49,28 +45,33 @@ AS BEGIN
                   EsCancelacion
                 )
   )
-  INSERT INTO @EstatusValidos
-  ( 
-    Estatus,
-    EsCancelacion,
-    Factor 
-  )
-  VALUES 
-    ( 'CONCLUIDO', 0,  1 ),
-    ( 'PENDIENTE', 0,  1 ),
-    ( 'CANCELADO', 0,  1 ), 
-    ( 'CANCELADO', 1, -1 )
+  
+
+  IF @Tipo = 1 
+  BEGIN
+    INSERT INTO @EstatusValidos
+    ( 
+      Estatus,
+      EsCancelacion,
+      Factor 
+    )
+    VALUES 
+      ( 'CONCLUIDO', 0,  1 ),
+      ( 'PENDIENTE', 0,  1 ),
+      ( 'CANCELADO', 0,  1 ), 
+      ( 'CANCELADO', 1, -1 )
+  END
 
   SELECT
+    Empleado = @Empleado,
     origenCont.Modulo,
     m.ID,
     m.Mov,
     m.MovId,
     m.Sucursal,
     m.FechaEmision,
-    m.Proveedor,
-    ProvNombre =  REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
-    ProvCuenta =  Prov.Cuenta,
+    Cuenta = m.Proveedor,
+    Nombre =  REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
     m.Estatus,
     eV.EsCancelacion,
     Moneda = m.ProveedorMoneda,
@@ -165,15 +166,15 @@ AS BEGIN
   --  de la Aplicaciones y Endosos donde se puede considerar su Neto.
 
   SELECT 
+    Empleado = @Empleado,
     origenCont.Modulo,
     m.ID,
     m.Mov,
     m.MovId,
     aux.Sucursal,
     m.FechaEmision,
-    m.Proveedor,
-    ProvNombre =  REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
-    ProvCuenta =  Prov.Cuenta,
+    Cuenta = m.Proveedor,
+    Nombre = cf.Nombre,
     m.Estatus,
     aux.EsCancelacion,
     aux.Moneda,
@@ -211,6 +212,11 @@ AS BEGIN
                                             AND fc.ModuloID = aux.ModuloId
                                             AND fc.Documento = aux.Aplica
                                             AND fc.DocumentoID = aux.AplicaID
+  -- Clean Fields
+  OUTER APPLY (  
+                SELECT
+                  Nombre = ISNULL(REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),'')
+              ) cf
   -- Poliza Contable
   OUTER APPLY( 
                SELECT TOP 1
@@ -262,7 +268,7 @@ AS BEGIN
     aux.Sucursal,
     m.FechaEmision,
     m.Proveedor,
-    REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
+    cf.Nombre,
     Prov.Cuenta,
     m.Estatus,
     aux.EsCancelacion,
