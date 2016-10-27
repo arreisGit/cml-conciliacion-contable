@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_SPI_ConciliacionCont_CxAuxiliar') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_SPI_ConciliacionCont_AuxCx') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_SPI_ConciliacionCont_CxAuxiliar 
+  DROP PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCx
 END	
 
 
@@ -22,11 +22,11 @@ GO
 -- para poder verificar el saldo de la cartera
 -- durante la conciliacion contaable
 --
--- Example: EXEC CUP_SPI_ConciliacionCont_CxAuxiliar 63527, 1, 2016, 9
+-- Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 1, 2016, 9
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_CxAuxiliar
+CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCx
   @Empleado INT,
   @Tipo INT,
   @Ejercicio INT,

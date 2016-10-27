@@ -90,7 +90,7 @@ AS BEGIN
     AuxiliaMov = origenCont.AuxMov,
     PolizaID =  pf.DID
   FROM 
-    CUP_CxOrigenContable origenCont 
+    CUP_ConciliacionCont_Tipo_OrigenContable origenCont 
   JOIN Gasto m ON origenCont.Mov = m.Mov
   JOIN Prov ON Prov.Proveedor = m.Acreedor
   JOIN @EstatusValidos eV ON eV.Estatus = m.Estatus
@@ -132,7 +132,8 @@ AS BEGIN
                   )
               ) pf
   WHERE
-    OrigenCont.UsarAuxiliarNeto = 0
+      origenCont.Tipo = @Tipo
+  AND origenCont.UsarAuxiliarNeto = 0
   AND origenCont.Modulo = 'GAS'
   AND (  origenCont.ValidarOrigen = 0
       OR (  

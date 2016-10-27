@@ -97,7 +97,7 @@ AS BEGIN
     AuxiliaMov = origenCont.AuxMov,
     PolizaID =  pf.DID
   FROM 
-    CUP_CxOrigenContable origenCont 
+    CUP_ConciliacionCont_Tipo_OrigenContable origenCont 
   JOIN Cxp m ON origenCont.Mov = m.Mov
   JOIN Prov ON Prov.Proveedor = m.Proveedor
   JOIN @EstatusValidos eV ON eV.Estatus = m.Estatus
@@ -146,7 +146,8 @@ AS BEGIN
                   )
               ) pf
   WHERE
-    OrigenCont.UsarAuxiliarNeto = 0
+    OrigenCont.Tipo = @Tipo 
+  AND OrigenCont.UsarAuxiliarNeto = 0
   AND origenCont.Modulo = 'CXP'
   AND (  origenCont.ValidarOrigen = 0
       OR (  
@@ -193,7 +194,7 @@ AS BEGIN
     AuxiliaMov = origenCont.AuxMov,
     PolizaID  = pf.DID
   FROM 
-    CUP_CxOrigenContable origenCont
+    CUP_ConciliacionCont_Tipo_OrigenContable origenCont
   JOIN Auxiliar aux ON aux.Modulo = origenCont.Modulo
                    AND aux.Mov    = origenCont.Mov
   JOIN rama r ON r.Rama = aux.Rama
@@ -247,8 +248,9 @@ AS BEGIN
                       )
                   )
               ) pf
-  WHERE 
-      origenCont.UsarAuxiliarNeto = 1 
+  WHERE
+      origenCont.Tipo = @Tipo 
+  AND origenCont.UsarAuxiliarNeto = 1 
   AND origenCont.Modulo = 'CXP'
   AND r.Mayor = 'CXP'
   AND aux.Ejercicio = @Ejercicio
