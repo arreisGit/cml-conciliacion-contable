@@ -58,4 +58,7 @@ AS BEGIN
   -- Auxiliares Modulo
   EXEC CUP_SPI_ConciliacionCont_AuxModulo @Empleado, @Tipo, @Ejercicio, @Periodo
 
+  -- Devuelve la Caratula Contable de la conciliacion requerida
+  EXEC CUP_SPQ_ConciliacionCont_Caratula @Empleado, @Tipo, @Ejercicio, @Periodo
+
 END
