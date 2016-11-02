@@ -34,6 +34,8 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_SaldosEsperados
   @Periodo   INT
 AS BEGIN 
 
+  SET NOCOUNT ON;
+
   DECLARE
     @TC_Inicial FLOAT,
     @TC_Final FLOAT,

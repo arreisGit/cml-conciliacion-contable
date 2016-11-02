@@ -22,162 +22,48 @@ GO
 -- y con la suficiente informacion para facilitar  
 -- la conciliacion.
 -- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 'CXP', 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 63527, 'Pago'
 --
 -- =============================================
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_ModuloVsCont
-  @Modulo CHAR(5),
-  @Ejercicio INT,
-  @Periodo INT
+  @Empleado INT,
+  @Concepto  VARCHAR(20)
 AS BEGIN 
     
-    -- 1) Obtenemos el Auxiliar de Modulo
-    IF OBJECT_ID('tempdb..#CxAuxiliarModulo') IS NOT NULL
-      DROP TABLE #CxAuxiliarModulo
+  --SELECT 
+  --  Modulo = 'COMS',
+  --  Id = 0,
+  --  Mov = 'Something',
+  --  MovID = 'Else',
+  --  PolizaId = 0,
+  --  PolizaMov = 'Cont',
+  --  PolizaMovID = ':D',
+  --  TotalModuloMN = 0,
+  --  NetoCont  = 0,
+  --  Variacion  = 0
 
-    CREATE TABLE #CxAuxiliarModulo
-    (
-      Modulo CHAR(5) NOT NULL ,
-      ID INT NOT NULL,
-      Mov CHAR(20) NOT NULL,
-      MovId VARCHAR(20) NULL,
-      Sucursal INT NOT NULL,
-      FechaEmision DATE  NOT NULL,
-      Proveedor CHAR(10) NOT NULL,
-      ProvNombre VARCHAR(100) NULL,
-      ProvCuenta VARCHAR(20) NULL,
-      Estatus VARCHAR(15) NOT NULL,
-      EsCancelacion BIT NOT NULL,
-      Moneda CHAR(10) NOT NULL,
-      TipoCambio FLOAT NOT NULL,
-      ImporteTotal DECIMAL(18,4) NOT  NULL,
-      FluctuacionCambiariaMN DECIMAL(18,4) NOT NULL,
-      ImporteTotalMN DECIMAL(18,4) NOT NULL,
-      AuxiliarModulo CHAR(5) NOT NULL,
-      AuxiliarMov CHAR(20) NOT NULL,
-      PolizaID INT NULL
-    )
-
-    
-  CREATE NONCLUSTERED INDEX [IX_#CxAuxiliarModulo_PolizaID]
-  ON [dbo].[#CxAuxiliarModulo] ( PolizaID )
-  INCLUDE
-  ( 
-    AuxiliarModulo,
-    AuxiliarMov,
-    Modulo,
-    ID,
-    Sucursal,
-    FechaEmision,
-    Proveedor,
-    ProvNombre,
-    ProvCuenta, 
-    Estatus,
-    EsCancelacion,
-    Moneda,
-    TipoCambio,
-    ImporteTotal,
-    FluctuacionCambiariaMN,
-    ImporteTotalMN
-  )
-          
-  INSERT INTO #CxAuxiliarModulo
-  EXEC CUP_spq_CxAuxiliarOrigenContableCxp @Ejercicio, @Periodo
-
-  INSERT INTO #CxAuxiliarModulo
-  EXEC CUP_spq_CxAuxiliarOrigenContableComs @Ejercicio, @Periodo
-
-  INSERT INTO #CxAuxiliarModulo
-  EXEC CUP_spq_CxAuxiliarOrigenContableGas @Ejercicio, @Periodo
-
-  -- 2) Obtenemos el Auxiliar de Contabilidad
-  IF OBJECT_ID('tempdb..#CxAuxiliarCont') IS NOT NULL
-    DROP TABLE #CxAuxiliarCont
-
-  CREATE TABLE #CxAuxiliarCont
-  (
-    ID INT NOT NULL,
-    Cuenta     CHAR(20) NOT NULL,
-    Descripcion VARCHAR(100) NULL ,
-    CentroCostos VARCHAR(50) NULL,
-    Debe DECIMAL(18,4) NOT NULL,
-    Haber DECIMAL(18,4) NOT NULL,
-    Neto DECIMAL(18,4) NOT NULL,
-    Sucursal INT NULL,
-    FechaContable DATE NOT NULL,
-    Mov CHAR(20) NOT NULL,
-    MovId VARCHAR(20) NULL,
-    Referencia VARCHAR(50) NULL,
-    OrigenModulo CHAR(5) NULL,
-    OrigenModuloID INT NULL,
-    OrigenMov CHAR(20) NULL,
-    OrigenMovId VARCHAR(20) NULL,
-    AuxiliarModulo CHAR(5) NULL,
-    AuxiliarMov VARCHAR(20) NULL,
-    PRIMARY KEY ( 
-                  ID,
-                  Cuenta
-                )
-  )
-
-    
-  CREATE NONCLUSTERED INDEX [IX_#CxAuxiliarCont_OrigenModulo_OrigenModuloID]
-  ON [dbo].[#CxAuxiliarCont] ( OrigenModulo, OrigenModuloID )
-  INCLUDE ( 
-            ID,
-            Cuenta,
-            Debe,
-            Haber,
-            Neto,
-            OrigenMov,
-            OrigenMovID,
-            AuxiliarModulo,
-            AuxiliarMov
-          )
-
-  INSERT INTO #CxAuxiliarCont
-  EXEC CUP_spq_CxAuxiliarCont 'CXP', @Ejercicio, @Periodo
-
-  -- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
+  
+  ---- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
   SELECT
     modulo.Modulo,
-    modulo.ID,
+    Id = CAST(modulo.ID AS VARCHAR),
     modulo.Mov,
     modulo.MovId,
-    modulo.AuxiliarModulo,
-    modulo.AuxiliarMov,    
-    modulo.Sucursal,
-    modulo.FechaEmision,
-    modulo.Proveedor,
-    modulo.ProvNombre,
-    modulo.ProvCuenta,
     modulo.Estatus,
-    modulo.EsCancelacion,
     modulo.PolizaID,
-    modulo.Moneda,
-    modulo.TipoCambio,
-    modulo.ImporteTotal,
-    modulo.FluctuacionCambiariaMN,    
-    modulo.ImporteTotalMN,
-    Diferencia = ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0),
-    ContNeto =  cont.Neto,
-    ContDebe =  cont.Debe,
-    ContHaber = cont.Haber,
-    cont.Cuenta,
-    cont.Descripcion,
-    ContID =cont.Id,
-    PolizaMov = cont.Mov,
-    PolizaMovID =cont.Movid,
-    cont.OrigenMov,
-    cont.OrigenMovId,
-    ContAuxMod = cont.AuxiliarModulo,
-    ContAuxMov = cont.AuxiliarMov
+    ConciliacionPolizaID    = cont.Id,
+    ConciliacionPolizaMov   = cont.Mov,
+    ConciliacionPolizaMovID = cont.Movid,
+    TotalModuloMN = CAST(ISNULL(modulo.ImporteTotalMN,0) AS FLOAT),
+    NetoCont =  CAST(ISNULL(cont.Neto,0) AS FLOAT),
+    Variacion = CAST(ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0) AS FLOAT)
   FROM 
-    #CxAuxiliarModulo modulo
-  FULL OUTER JOIN #CxAuxiliarCont cont ON modulo.PolizaID = cont.ID
-  ORDER BY
-    cont.AuxiliarModulo,
-    cont.AuxiliarMov  
+    CUP_ConciliacionCont_AuxModulo modulo
+  FULL OUTER JOIN CUP_ConciliacionCont_AuxCont cont ON modulo.PolizaID = cont.ID
+                                                  AND modulo.AuxiliarMov = cont.AuxiliarMov
+  WHERE 
+    ISNULL(modulo.AuxiliarMov, cont.AuxiliarMov ) = @Concepto
+  AND ABS(ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0)) >= 1
 END

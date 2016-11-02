@@ -33,7 +33,7 @@ CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCont
   @Periodo INT
 AS BEGIN 
 
-  SET NOCOUNT ON
+  SET NOCOUNT ON;
 
   DELETE CUP_ConciliacionCont_AuxCont
   WHERE Empleado = @Empleado

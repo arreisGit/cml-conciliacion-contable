@@ -39,17 +39,19 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_Caratula
   @Ejercicio  INT,
   @Periodo    INT
 AS BEGIN 
+
+  SET NOCOUNT ON;
   
   DECLARE @Caratula TABLE
   (
-    Orden INT NOT NULL,
-    Concepto VARCHAR(50) NOT NULL,
-    ImporteDlls DECIMAL(18,4) NOT NULL,
+    Orden               INT NOT NULL,
+    Concepto            VARCHAR(50) NOT NULL,
+    ImporteDlls         DECIMAL(18,4) NOT NULL,
     ImporteConversionMN DECIMAL(18,4) NOT NULL,
-    ImporteMN   DECIMAL(18,4) NOT NULL,
-    TotalMN DECIMAL(18,4) NOT NULL,
-    Contabilidad DECIMAL(18,4) NOT NULL,
-    Variacion DECIMAL(18,4) NULL,
+    ImporteMN           DECIMAL(18,4) NOT NULL,
+    TotalMN             DECIMAL(18,4) NOT NULL,
+    Contabilidad        DECIMAL(18,4) NOT NULL,
+    Variacion           DECIMAL(18,4) NULL,
     PRIMARY KEY ( 
                   Orden,
                   Concepto
@@ -150,6 +152,8 @@ AS BEGIN
     Neto = SUM(ISNULL(Neto,0))
   FROM 
     CUP_ConciliacionCont_AuxCont
+  WHERE 
+    Empleado = @Empleado
   GROUP BY 
     ISNULL(AuxiliarModulo,''),
     ISNULL(AuxiliarMov,'')
@@ -297,14 +301,14 @@ AS BEGIN
   SELECT 
     Orden,
     Concepto,
-    ImporteDlls,
-    ImporteConversionMN,
-    ImporteMN,
-    TotalMN,
-    Contabilidad,
-    Variacion
+    ImporteDlls= CAST(ImporteDlls AS FLOAT),
+    ImporteConversionMN =  CAST(ImporteConversionMN AS FLOAT),
+    ImporteMN = CAST(ImporteMN AS FLOAT),
+    TotalMN = CAST(TotalMN AS FLOAT),
+    Contabilidad = CAST(Contabilidad AS FLOAT),
+    Variacion = CAST(Variacion AS FLOAT)
   FROM 
-    @Caratula
+    @Caratula  
   ORDER BY
     Orden,
     Concepto

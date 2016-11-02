@@ -31,6 +31,8 @@ CREATE PROCEDURE dbo.CUP_SPP_ConciliacionCont
   @Periodo INT
 AS BEGIN 
 
+  SET NOCOUNT ON;
+
   DELETE CUP_ConciliacionCont
   WHERE Empleado = @Empleado
  

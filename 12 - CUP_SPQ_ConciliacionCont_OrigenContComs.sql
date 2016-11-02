@@ -31,6 +31,8 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContComs
   @Ejercicio INT,
   @Periodo   INT
 AS BEGIN 
+  
+  SET NOCOUNT ON;
 
   -- Tabla utilizada a modo de "workaround" 
   -- para poder simular el efecto de "EsCancelacion"

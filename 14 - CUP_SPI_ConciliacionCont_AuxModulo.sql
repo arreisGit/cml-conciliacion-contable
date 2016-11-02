@@ -26,6 +26,8 @@ CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxModulo
   @Ejercicio INT,
   @Periodo INT
 AS BEGIN 
+  
+  SET NOCOUNT ON;
 
   DELETE CUP_ConciliacionCont_AuxModulo
   WHERE Empleado = @Empleado

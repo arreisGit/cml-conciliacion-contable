@@ -32,6 +32,8 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContCxp
   @Periodo INT
 AS BEGIN 
 
+  SET NOCOUNT ON;
+
   -- Tabla utilizada a modo de "workaround" 
   -- para poder simular el efecto de "EsCancelacion"
   -- directo en el modulo.
@@ -92,7 +94,6 @@ AS BEGIN
                             * ISNULL(origenCont.Factor,1)
                             * eV.Factor 
                      , 4, 1),
-
     AuxiliarModulo = origenCont.AuxModulo,
     AuxiliaMov = origenCont.AuxMov,
     PolizaID =  pf.DID
@@ -276,7 +277,7 @@ AS BEGIN
     aux.EsCancelacion,
     aux.Moneda,
     aux.TipoCambio,
-      origenCont.AuxModulo,
+    origenCont.AuxModulo,
     origenCont.AuxMov,
     pf.DID
 END
