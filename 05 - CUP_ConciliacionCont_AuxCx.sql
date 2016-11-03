@@ -19,12 +19,12 @@ GO
 CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
 (
   Empleado INT NOT NULL,
-  AuxID INT NULL,
-  Fecha DATE NOT NULL,
+  AuxID    INT NULL,
+  Fecha    DATE NOT NULL,
   Sucursal INT NOT NULL,
-  Cuenta CHAR(10) NOT NULL,
-  Nombre VARCHAR(100) NULL, 
-  Modulo CHAR(5) NOT NULL,
+  Cuenta   CHAR(10) NOT NULL,
+  Nombre   VARCHAR(100) NULL, 
+  Modulo  CHAR(5) NOT NULL,
   ModuloID INT NOT NULL,
   Mov  CHAR(20) NOT NULL,
   MovID VARCHAR(20)  NULL,
@@ -38,13 +38,13 @@ CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
   NetoMN DECIMAL(18,4) NOT NULL,
   FluctuacionMN DECIMAL(18,4) NOT NULL,
   TotalMN DECIMAL(18,4) NOT NULL,
-  Aplica CHAR(20) NOT NULL,
-  AplicaID VARCHAR(20) NULL,
-  EsCancelacion BIT NOT NULL,  
-  OrigenModulo CHAR(5) NULL,
-  OrigenModuloID INT NULL,
-  OrigenMov CHAR(20) NULL,
-  OrigenMovID VARCHAR(20) NULL
+  Aplica            CHAR(20) NOT NULL,
+  AplicaID          VARCHAR(20) NULL,
+  EsCancelacion     BIT NOT NULL,  
+  OrigenModulo      VARCHAR(10) NULL,
+  OrigenModuloID    INT NULL,
+  OrigenMov         CHAR(20) NULL,
+  OrigenMovID       VARCHAR(20) NULL
 ) 
 
 CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxCx_Empleado]
