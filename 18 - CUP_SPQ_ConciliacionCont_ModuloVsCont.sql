@@ -31,24 +31,10 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_ModuloVsCont
   @Empleado INT,
   @Concepto  VARCHAR(20)
 AS BEGIN 
-    
-  --SELECT 
-  --  Modulo = 'COMS',
-  --  Id = 0,
-  --  Mov = 'Something',
-  --  MovID = 'Else',
-  --  PolizaId = 0,
-  --  PolizaMov = 'Cont',
-  --  PolizaMovID = ':D',
-  --  TotalModuloMN = 0,
-  --  NetoCont  = 0,
-  --  Variacion  = 0
 
-  
-  ---- 3) Cruzamos los auxiliares de Modulo y Contabilidad entre si
   SELECT
     modulo.Modulo,
-    Id = CAST(modulo.ID AS VARCHAR),
+    modulo.ID,
     modulo.Mov,
     modulo.MovId,
     modulo.Estatus,
@@ -63,7 +49,10 @@ AS BEGIN
     CUP_ConciliacionCont_AuxModulo modulo
   FULL OUTER JOIN CUP_ConciliacionCont_AuxCont cont ON modulo.PolizaID = cont.ID
                                                   AND modulo.AuxiliarMov = cont.AuxiliarMov
+                                                  AND modulo.Empleado = cont.Empleado
   WHERE 
-    ISNULL(modulo.AuxiliarMov, cont.AuxiliarMov ) = @Concepto
+    ISNULL(modulo.Empleado,cont.Empleado) = @Empleado
+  AND ISNULL(modulo.AuxiliarMov, cont.AuxiliarMov ) = @Concepto
   AND ABS(ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0)) >= 1
+
 END
