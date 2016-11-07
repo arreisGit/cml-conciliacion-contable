@@ -104,6 +104,10 @@ AS BEGIN
                               - ISNULL(m.Retencion,0)
                               - ISNULL(m.DescuentoGlobal,0)
               ) calc
+  -- Excepciones Cuentas
+  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                               AND ex.TipoExcepcion = 1
+                                               AND ex.Valor = m.Proveedor 
   -- Poliza Contable
   OUTER APPLY( 
                 SELECT 
@@ -148,5 +152,7 @@ AS BEGIN
   AND m.Ejercicio = @Ejercicio
   AND m.Periodo = @Periodo
   AND m.Estatus IN ('PENDIENTE','CANCELADO','CONCLUIDO')
+  -- Filtro Excepciones cuenta
+  AND eX.ID IS NULL
  
 END

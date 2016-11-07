@@ -137,14 +137,21 @@ AS BEGIN
                     Neto = ISNULL(aux.Cargo,0) - ISNULL( aux.Abono,0),
                     FluctuacionMN  = ISNULL(fc.Diferencia_Cambiaria_MN,0)
                 ) Calc
+    -- Excepciones Cuentas
+    LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                                 AND ex.TipoExcepcion = 1
+                                                 AND ex.Valor = aux.cuenta
     WHERE
       r.Mayor = 'CXP'
     AND aux.Ejercicio = @Ejercicio 
     AND aux.Periodo = @Periodo
     AND ISNULL(at.Clave,'') NOT IN ('CXP.SCH','CXP.SD')
     AND aux.Modulo = 'CXP'
+    -- Filtro Excepciones cuenta
+    AND eX.ID IS NULL
 
     UNION
+
     -- Reevaluaciones de Movimientos del mes
     SELECT
       Empleado = @Empleado, 
@@ -197,10 +204,16 @@ AS BEGIN
                             END
                   ) impCargoAbono
     LEFT JOIN Cont pol ON pol.ID = p.ContID
+    -- Excepciones Cuentas
+    LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                                 AND ex.TipoExcepcion = 1
+                                                 AND ex.Valor = p.Proveedor
     WHERE 
       t.Clave = 'CXP.RE'
     AND p.Estatus = 'CONCLUIDO'
     AND p.Ejercicio = @Ejercicio
     AND p.Periodo = @Periodo
+    -- Filtro Excepciones cuenta
+    AND eX.ID IS NULL
   END
 END

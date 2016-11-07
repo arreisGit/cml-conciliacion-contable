@@ -7,7 +7,8 @@ INSERT INTO
   Empleado 
 )
 VALUES
-  ('Saldo Proveedores', 63527)
+  ('Saldo Proveedores', 63527),
+  ('IVA Por Acreeditar', 63527)
 
 SELECT
   ID,

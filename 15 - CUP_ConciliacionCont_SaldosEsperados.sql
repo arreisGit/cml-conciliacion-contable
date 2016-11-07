@@ -127,13 +127,18 @@ AS BEGIN
                    AND  t.Mov  = aux.Mov
       LEFT JOIN MovTipo at ON at.Modulo = aux.Modulo
                           AnD at.Mov = aux.Aplica
+      -- Excepciones Cuentas
+      LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                                   AND ex.TipoExcepcion = 1
+                                                   AND ex.Valor = aux.cuenta
       WHERE
         r.Mayor = 'CXP'
       AND CAST(aux.Fecha AS DATE) <= @FechaFin
       AND aux.Modulo = 'CXP'
-      AND aux.Cuenta <> 'SHCP'
       AND ISNULL(at.Clave,'') NOT IN ('CXP.SCH','CXP.SD')
       AND aux.Modulo = 'CXP'
+      -- Filtro Excepciones cuenta
+      AND eX.ID IS NULL
       GROUP BY 
         aux.Aplica,
         aux.AplicaID,

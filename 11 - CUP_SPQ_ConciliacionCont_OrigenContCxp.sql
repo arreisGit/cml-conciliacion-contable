@@ -116,6 +116,10 @@ AS BEGIN
               WHERE
                 dc.Modulo = origenCont.Modulo
               AND dc.ModuloID = m.ID) fc
+  -- Excepciones Cuentas
+  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                               AND ex.TipoExcepcion = 1
+                                               AND ex.Valor = m.Proveedor
   -- Poliza Contable
   OUTER APPLY( 
                SELECT 
@@ -160,6 +164,8 @@ AS BEGIN
   AND m.Ejercicio = @Ejercicio
   AND m.Periodo = @Periodo
   AND m.Estatus IN ('PENDIENTE','CANCELADO','CONCLUIDO')
+  -- Filtro Excepciones cuenta
+  AND eX.ID IS NULL
 
   UNION 
 
@@ -219,6 +225,10 @@ AS BEGIN
                 SELECT
                   Nombre = ISNULL(REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),'')
               ) cf
+  -- Excepciones Cuentas
+  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                               AND ex.TipoExcepcion = 1
+                                               AND ex.Valor = aux.Cuenta
   -- Poliza Contable
   OUTER APPLY( 
                SELECT TOP 1
@@ -263,6 +273,8 @@ AS BEGIN
           AND ISNULL(origenCont.Origen,'') = ISNULL(m.Origen,'')
         )
       )
+  -- Filtro Excepciones cuenta
+  AND eX.ID IS NULL
   GROUP BY 
     origenCont.Modulo,
     m.ID,
