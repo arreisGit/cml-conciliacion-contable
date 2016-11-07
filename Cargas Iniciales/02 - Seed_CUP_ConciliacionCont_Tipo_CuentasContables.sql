@@ -15,9 +15,9 @@ VALUES
   ( 1, '211-600-004-0000'), -- Cuprum SA de CV
   ( 1, '211-600-005-0000'), -- Tiendas Cuprum SA de CV	
   ( 1, '211-600-006-0000'), -- Grupo Cuprum SA de CV   	
-  ( 1, '211-600-009-0000'),  -- Cuprum Fab SA de CV	
+  ( 1, '211-600-009-0000')  -- Cuprum Fab SA de CV	
   /* Saldo Proveedores */
-  ( 2, '119-210-000-0000') -- IVA 16% Por Acreditar
+ ,( 2, '119-210-000-0000') -- IVA 16% Por Acreditar
 
 SELECT 
   ID,

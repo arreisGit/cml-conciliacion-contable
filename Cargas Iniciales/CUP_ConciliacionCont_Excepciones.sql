@@ -7,8 +7,8 @@ INSERT INTO
   Empleado
 )
 VALUES
-  ( 1, 1, 'SHCP',63527), 
-  ( 2, 1, 'SHCP',63527)
+  ( 1, 1, 'SHCP',63527)
+ ,( 2, 1, 'SHCP',63527)
 
 SELECT 
   ID,
