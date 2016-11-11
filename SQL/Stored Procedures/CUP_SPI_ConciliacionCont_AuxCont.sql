@@ -22,7 +22,7 @@ GO
 -- poder hacer el cruce contra los auxiliares
 -- CX  en un ejercicio/periodo especifico
 -- 
--- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 63527, 1, 2016, 9
+-- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 63527, 3, 2016, 10
 -- =============================================
 
 
@@ -68,8 +68,9 @@ AS BEGIN
     CentroCostos = ISNULL(d.Subcuenta,''),
     Debe  = SUM(ISNULL(d.Debe,0)),
     Haber = SUM(ISNULL(d.Haber,0)), 
-    Neto = SUM(CASE ISNULL(Cta.EsAcreedora,0)
-                WHEN 1 THEN 
+    Neto = SUM(CASE
+                WHEN @Tipo <> 3 -- Saldos CXC  
+                AND ISNULL(Cta.EsAcreedora,0) =  1 THEN 
                   ISNULL(d.Haber,0) - ISNULL(d.Debe,0)
                 ELSE
                   ISNULL(d.Debe,0) - ISNULL(Haber,0)

@@ -20,7 +20,7 @@ GO
 -- toda la informacion necesaria para realizar 
 -- las conciliaciones contable.
 --
--- Example: EXEC CUP_SPP_ConciliacionCont 63527, 1, 2016, 09
+-- Example: EXEC CUP_SPP_ConciliacionCont 63527, 3, 2016, 10
 -- =============================================
 
 

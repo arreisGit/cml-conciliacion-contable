@@ -19,11 +19,11 @@ GO
 CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
 (
   Empleado INT NOT NULL,
+  Rama     CHAR(5) NOT NULL,
   AuxID    INT NULL,
   Fecha    DATE NOT NULL,
   Sucursal INT NOT NULL,
   Cuenta   CHAR(10) NOT NULL,
-  Nombre   VARCHAR(100) NULL, 
   Modulo  CHAR(5) NOT NULL,
   ModuloID INT NOT NULL,
   Mov  CHAR(20) NOT NULL,
@@ -54,7 +54,6 @@ INCLUDE (
           Fecha,
           Sucursal,
           Cuenta,
-          Nombre,
           Modulo,
           ModuloId,
           Mov,
@@ -78,7 +77,6 @@ INCLUDE (
           Fecha,
           Sucursal,
           Cuenta,
-          Nombre,
           MovID,
           Moneda,
           Cargo,

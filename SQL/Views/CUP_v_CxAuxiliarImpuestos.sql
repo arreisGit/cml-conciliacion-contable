@@ -33,12 +33,14 @@ SELECT
   aux.ModuloID,
   aux.Mov,
   aux.Movid,
+  MovTipo = t.Clave,
   aux.Moneda,
   aux.TipoCambio,
   aux.Cargo,
   aux.Abono,
   aux.Aplica,
   aux.AplicaID,
+  AplicaMovTipo = at.Clave,
   aux.EsCancelacion,
   IVAFiscal  = ISNULL(doc.IvaFiscal,0)
 FROM 

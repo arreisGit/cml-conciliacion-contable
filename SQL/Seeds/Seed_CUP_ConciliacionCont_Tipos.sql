@@ -9,6 +9,7 @@ INSERT INTO
 VALUES
   ('Saldo Proveedores', 63527)
  ,('IVA Por Acreeditar', 63527)
+ ,('Saldo Clientes', 63527)
 
 SELECT
   ID,

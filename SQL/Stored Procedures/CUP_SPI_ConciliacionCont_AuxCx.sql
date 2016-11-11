@@ -22,7 +22,7 @@ GO
 -- para poder verificar el saldo de la cartera
 -- durante la conciliacion contaable
 --
--- Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 1, 2016, 9
+-- Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 3, 2016, 10
 -- =============================================
 
 
@@ -38,17 +38,18 @@ AS BEGIN
   DELETE CUP_ConciliacionCont_AuxCx
   WHERE Empleado = @Empleado
 
+  -- Saldo Proveedores
   IF @TIPO = 1
   BEGIN
     INSERT INTO
       CUP_ConciliacionCont_AuxCx
     (
       Empleado,
+      Rama,
       AuxID,
       Fecha,
       Sucursal,
       Cuenta,
-      Nombre,
       Modulo,
       ModuloID,
       Mov,
@@ -74,11 +75,11 @@ AS BEGIN
     -- Detalle Auxiliar
     SELECT
       Empleado = @Empleado,
+      aux.Rama,
       AuxID  = aux.ID,
       aux.Fecha,
       aux.Sucursal,
       aux.Cuenta,
-      Nombre = REPLACE(REPLACE(REPLACE(prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
       aux.Modulo,
       aux.ModuloID,
       aux.Mov,
@@ -155,11 +156,11 @@ AS BEGIN
     -- Reevaluaciones de Movimientos del mes
     SELECT
       Empleado = @Empleado, 
+      Rama = 'REV',
       AuxID = NULL,
       Fecha = CAST(p.FechaEmision AS DATE),
       p.Sucursal,
       Cuenta = p.Proveedor,
-      Nombre = REPLACE(REPLACE(REPLACE(Prov.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),
       Modulo = 'CXP',
       ModuloID = p.ID,
       p.Mov,
@@ -215,5 +216,151 @@ AS BEGIN
     AND p.Periodo = @Periodo
     -- Filtro Excepciones cuenta
     AND eX.ID IS NULL
+  END
+
+  -- Iva X Acreeditar
+  IF @TIPO = 2
+  BEGIN
+    INSERT INTO
+      CUP_ConciliacionCont_AuxCx
+    (
+      Empleado,
+      Rama,
+      AuxID,
+      Fecha,
+      Sucursal,
+      Cuenta,
+      Modulo,
+      ModuloID,
+      Mov,
+      MovID,
+      Moneda,
+      TipoCambio,
+      Cargo,
+      Abono,
+      Neto,
+      CargoMN,
+      AbonoMN,
+      NetoMN,
+      FluctuacionMN,
+      TotalMN,
+      Aplica,
+      AplicaID,
+      EsCancelacion,
+      OrigenModulo,
+      OrigenModuloID,
+      OrigenMov,
+      OrigenMovID
+    )
+    -- Detalle Auxiliar
+    SELECT
+      Empleado = @Empleado,
+      Rama = 'CXP',
+      AuxID  = aux.ID,
+      aux.Fecha,
+      aux.Sucursal,
+      aux.Cuenta,
+      aux.Modulo,
+      aux.ModuloID,
+      aux.Mov,
+      aux.MovID,
+      aux.Moneda,
+      aux.TipoCambio,
+      Cargo = ISNULL(aux.Cargo,0),
+      Abono = ISNULL(aux.Abono,0),
+      Neto = calc.Neto,
+      CargoMN = ROUND(ISNULL(aux.Cargo,0) * aux.TipoCambio * aux.IVAFiscal,4,1),
+      AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio * aux.IVAFiscal,4,1),
+      NetoMN =  ROUND(ISNULL(calc.Neto,0) * aux.TipoCambio * aux.IVAFiscal,4,1),
+      FluctuacionMN  = 0 ,-- ,ROUND(calc.FluctuacionMN * -1 * ISNULL(fctorCanc.Factor,1),4,1),
+      TotalMN = ROUND(  
+                      (calc.Neto * aux.TipoCambio * aux.IVAFiscal)
+                    + 0 --(calc.FluctuacionMN * -1 * ISNULL(fctorCanc.Factor,1))
+                ,4,1),
+      aux.Aplica,
+      aux.AplicaID,
+      aux.EsCancelacion,
+      OrigenModulo = ISNULL(p.OrigenTipo,''),
+      OrigenModuloID = ISNULL(CAST(ISNULL(c.ID,g.ID) AS VARCHAR),''),
+      OrigenMov = ISNULL(p.Origen,''),
+      OrigenMovID = ISNULL(p.OrigenID,'')
+    FROM
+      CUP_v_CxAuxiliarImpuestos aux
+     -- Excepciones Cuentas
+    LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                                 AND ex.TipoExcepcion = 1
+                                                 AND ex.Valor = aux.cuenta
+    JOIN Cxp p ON 'CXP' = aux.Modulo
+              AND p.ID = aux.ModuloID
+    JOIN Prov ON prov.Proveedor = Aux.Cuenta
+    LEFT JOIN Compra c ON 'COMS' = p.OrigenTipo
+                      AND c.Mov = p.Origen
+                      AND c.MovID = p.OrigenID
+    LEFT JOIN Gasto g ON 'GAS' = p.OrigenTipo
+                      AND g.Mov = p.Origen
+                      AND g.MovID = p.OrigenID
+    -- Factor Canceclacion
+    CROSS APPLY(SELECT
+                 Factor  = CASE ISNULL(aux.EsCancelacion,0) 
+                             WHEN 1 THEN
+                               -1
+                             ELSE 
+                                1
+                            END) fctorCanc 
+    -- Fluctuacion Cambiaria
+    LEFT JOIN CUP_v_CxDiferenciasCambiarias fc ON fc.Modulo = aux.Modulo
+                                              AND fc.ModuloID = aux.ModuloId
+                                              AND fc.Documento = aux.Aplica
+                                              AND fc.DocumentoID = aux.AplicaID
+    -- Campos Calculados
+    CROSS APPLY ( SELECT   
+                    Neto = (ISNULL(aux.Cargo,0) - ISNULL( aux.Abono,0)) * aux.IVAFiscal,
+                    FluctuacionMN  = ISNULL(fc.Diferencia_Cambiaria_MN,0)
+                ) Calc
+   
+    WHERE
+      aux.Ejercicio = @Ejercicio 
+    AND aux.Periodo = @Periodo
+    -- Filtro Excepciones cuenta
+    AND eX.ID IS NULL
+
+  END
+  
+  -- Saldos Ctes
+  IF @Tipo = 3 
+  BEGIN
+    INSERT INTO
+      CUP_ConciliacionCont_AuxCx
+    (
+      Empleado,
+      Rama,
+      AuxID,
+      Sucursal,
+      Cuenta,
+      Mov,
+      MovID,
+      Modulo,
+      ModuloID,
+      Moneda,
+      TipoCambio,
+      Fecha,
+      Cargo,
+      Abono,
+      Neto,
+      CargoMN,
+      AbonoMN,
+      NetoMN,
+      FluctuacionMN,
+      TotalMN,
+      EsCancelacion,
+      Aplica,
+      AplicaID,
+      OrigenModulo,
+      OrigenModuloID,
+      OrigenMov,
+      OrigenMovID
+    )
+    EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxc @Empleado, @Tipo, @Ejercicio, @Periodo
+
   END
 END

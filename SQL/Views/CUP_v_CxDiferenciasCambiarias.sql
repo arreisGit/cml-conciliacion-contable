@@ -2,20 +2,20 @@ SET ANSI_NULLS, ANSI_WARNINGS ON;
 
 GO 
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-10
---
---
--- Description: Desglosa las Diferencias Cambiarias 
---              de los Movimientos en Cxc y CxP.
--- 
--- Example: SELECT * 
---          FROM  CUP_v_CxDiferenciasCambiarias
---          WHERE Modulo = 'CXP'
---          AND ModuloID = 108192
---
--- =============================================
+/*=============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-10
+
+
+  Description: Desglosa las Diferencias Cambiarias 
+              de los Movimientos en Cxc y CxP.
+ 
+  Example: SELECT * 
+            FROM  CUP_v_CxDiferenciasCambiarias
+            WHERE Modulo = 'CXP'
+            AND ModuloID = 108192
+
+=============================================*/
 
 
 IF EXISTS(SELECT * FROM sysobjects WHERE name='CUP_v_CxDiferenciasCambiarias')
@@ -107,7 +107,9 @@ AND t.clave IN ('CXC.C','CXC.ANC')
 AND ISNULL(d.Importe,0) <> 0
 AND d.Aplica NOT IN ('Redondeo','Saldo a Favor')
 AND dt.Clave <> 'CXC.NC'
+
 UNION -- Aplicaciones CXC
+
 SELECT
   c.Ejercicio,
   c.Periodo,
@@ -189,7 +191,151 @@ WHERE
 AND c.Moneda <> 'Pesos'
 AND t.clave IN ('CXC.C','CXC.ANC')
 AND ISNULL(c.Importe,0) <> 0
+
+UNION -- Amortizacion Facturas Anticipo en Facturas de Venta
+
+SELECT
+  v.Ejercicio,
+  v.Periodo,
+  Modulo = 'VTAS',
+  v.ID,
+  v.Mov,
+  v.MovID,
+  Fecha = v.FechaEmision,
+  Documento = doc.Mov,
+  DocumentoID = doc.MovID,
+  DocumentoTipo = mt.Clave,
+  Moneda = v.Moneda,
+  Importe = vfa.Importe,
+  TipoCambioRev  = tcRev.TipoCambio,
+  TipoCambioPago  = v.TipoCambio,
+  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
+  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
+  Factor = mt.Factor,
+  DiferenciaMN = Round((  
+                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
+                        ) * mt.Factor,4,1)
+FROM
+  Venta v 
+JOIN Movtipo t ON t.Modulo = 'VTAS'
+              AND t.Mov = v.Mov  
+JOIN VentaFacturaAnticipo vfa ON vfa.ID = v.ID
+JOIN cxc doc ON doc.ID = vfa.CxcID
+JOIN Movtipo mt ON mt.Modulo = 'CXC'
+               AND mt.Mov = doc.Mov
+-- Importe Aplica 
+CROSS APPLY( SELECT   
+                FactorTC =   1,
+                Importe =  ROUND(vfa.Importe,4,1)
+            ) importe_aplica 
+-- Ultima Rev
+OUTER APPLY ( SELECT TOP 1  
+                ur.ID ,
+                TipoCambio = ur.ClienteTipoCambio
+              FROM 
+                  Cxc ur 
+              JOIN CxcD urD ON  urD.Id = ur.ID
+              JOIN Movtipo urt ON urt.Modulo = 'CXC'
+                              AND urt.Mov =   ur.Mov
+              WHERE
+                urt.Clave = 'CXC.RE'
+              AND ur.Estatus = 'CONCLUIDO'
+              AND ur.FechaEmision < doc.FechaRegistro 
+              AND urD.Aplica = doc.Mov
+              AND urD.AplicaID = doc.MovID
+              ORDER BY 
+                ur.ID DESC ) ultRev
+-- Tipo de Cambio Historico
+OUTER APPLY(
+            SELECT 
+              TipoCambio = ISNULL(ultRev.TipoCambio,doc.TipoCambio)
+            ) tcRev
+-- Importes MN para el calculo
+CROSS APPLY( 
+            SELECT
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
+              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  v.TipoCambio,4,1)
+            ) importes_calculo
+WHERE 
+   v.Estatus IN ('CONCLUIDO','CANCELADO')
+AND v.Moneda <> 'Pesos'
+AND t.clave = 'VTAS.F'
+AND ISNULL(v.Importe,0) <> 0
+
+UNION -- Amortizacion Facturas Anticipo en Devoluciones Factura Anticicpo
+
+SELECT
+  c.Ejercicio,
+  c.Periodo,
+  Modulo = 'CXC',
+  c.ID,
+  c.Mov,
+  c.MovID,
+  Fecha = c.FechaEmision,
+  Documento = doc.Mov,
+  DocumentoID = doc.MovID,
+  DocumentoTipo = mt.Clave,
+  Moneda = c.Moneda,
+  Importe = cfa.Importe,
+  TipoCambioRev  = tcRev.TipoCambio,
+  TipoCambioPago  = c.TipoCambio,
+  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
+  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
+  Factor = mt.Factor,
+  DiferenciaMN = Round((  
+                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
+                        ) * mt.Factor,4,1)
+FROM
+  Cxc c 
+JOIN Movtipo t ON t.Modulo = 'CXC'
+              AND t.Mov = c.Mov  
+JOIN CxcFacturaAnticipo cfa ON cfa.ID = c.ID
+JOIN cxc doc ON doc.ID = cfa.CxcID
+JOIN Movtipo mt ON mt.Modulo = 'CXC'
+               AND mt.Mov = doc.Mov
+-- Importe Aplica 
+CROSS APPLY( SELECT   
+                FactorTC =   1,
+                Importe =  ROUND(cfa.Importe,4,1)
+            ) importe_aplica 
+-- Ultima Rev
+OUTER APPLY ( SELECT TOP 1  
+                ur.ID ,
+                TipoCambio = ur.ClienteTipoCambio
+              FROM 
+                  Cxc ur 
+              JOIN CxcD urD ON  urD.Id = ur.ID
+              JOIN Movtipo urt ON urt.Modulo = 'CXC'
+                              AND urt.Mov =   ur.Mov
+              WHERE
+                urt.Clave = 'CXC.RE'
+              AND ur.Estatus = 'CONCLUIDO'
+              AND ur.FechaEmision < doc.FechaRegistro 
+              AND urD.Aplica = doc.Mov
+              AND urD.AplicaID = doc.MovID
+              ORDER BY 
+                ur.ID DESC ) ultRev
+-- Tipo de Cambio Historico
+OUTER APPLY(
+            SELECT 
+              TipoCambio = ISNULL(ultRev.TipoCambio,doc.TipoCambio)
+            ) tcRev
+-- Importes MN para el calculo
+CROSS APPLY( 
+            SELECT
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
+              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.TipoCambio,4,1)
+            ) importes_calculo
+WHERE 
+   c.Estatus IN ('CONCLUIDO','CANCELADO')
+AND c.Moneda <> 'Pesos'
+AND t.clave = 'CXC.DFA'
+AND ISNULL(c.Importe,0) <> 0
+
 UNION -- Pagos Cxp
+
 SELECT
   p.Ejercicio,
   p.Periodo,
@@ -284,7 +430,9 @@ AND t.clave IN ('CXP.P','CXP.ANC')
 AND ISNULL(d.Importe,0) <> 0
 AND d.Aplica NOT IN ('Redondeo','Saldo a Favor')
 AND dt.Clave <> 'CXP.NC'
+
 UNION -- Aplicaciones Pagos
+
 SELECT
   p.Ejercicio,
   p.Periodo,
