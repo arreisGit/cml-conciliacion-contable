@@ -51,7 +51,7 @@ VALUES
   ( 1, 'CXP', 'Retencion',            'CXP',  'Retencion',             1, 0, 0, NULL,  NULL),
   ( 1, 'CXP', 'Reevaluacion',         'CXP',  'Reevaluacion',          1, 0, 0, NULL,  NULL),
   ( 1, 'CXP', 'Reevaluacion Credito', 'CXP',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
- -- IVA Por Acreeditar
+   /* IVA Por Acreeditar */
   ( 2, 'CXP', 'Anticipo',             'CXP',  'Anticipo',             -1, 0, 0, NULL,  NULL),
   ( 2, 'CXP', 'Aplicacion',           'CXP',  'Aplicacion',            1, 1, 0, NULL,  NULL),
   ( 2, 'CXP', 'Cargo Proveedor' ,     'CXP',  'Cargo Proveedor',       1, 0, 0, NULL,  NULL),
@@ -92,10 +92,12 @@ VALUES
   ( 3, 'CXC', 'Nota Cargo Serv CFD',  'CXC',  'Nota Cargo Serv CFD',   1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito',         'CXC',  'Nota Credito',         -1, 0, 1, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'CXC',  'Nota Credito CFD',     -1, 0, 1, NULL,  NULL),
+  ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonif Act Fijo CFD',   -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonif Pitex CFD',      -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonif Vta Export CFD', -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonificacion Vta CFD', -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Expor CFD', -1, 0, 0, NULL,  NULL),
+  ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Pitex CFD', -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Vta CFD',   -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CS CFD',  'CXC',  'Nota Credito CS CFD',  -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Saldo Fact Torr',      'CXC',  'Saldo Fact Torr',      -1, 0, 1, NULL,  NULL),

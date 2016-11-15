@@ -22,7 +22,7 @@ GO
 -- y con la suficiente informacion para facilitar  
 -- la conciliacion.
 -- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 63527, 'Pago'
+-- Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 63527, 'Ajuste'
 --
 -- =============================================
 

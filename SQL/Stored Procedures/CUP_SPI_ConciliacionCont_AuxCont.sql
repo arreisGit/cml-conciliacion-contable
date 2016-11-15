@@ -42,17 +42,12 @@ AS BEGIN
   (
     Empleado,
     ID,
-    Cuenta,
-    Descripcion,
-    CentroCostos,
     Debe,
     Haber,
     Neto,
-    Sucursal,
     FechaContable,
     Mov,
     MovId,
-    Referencia,
     OrigenModulo,
     OrigenModuloID,
     OrigenMov,
@@ -63,9 +58,6 @@ AS BEGIN
   SELECT 
     Empleado = @Empleado,
     c.ID,
-    d.Cuenta,
-    Descripcion = ISNULL(Cta.Descripcion,''),
-    CentroCostos = ISNULL(d.Subcuenta,''),
     Debe  = SUM(ISNULL(d.Debe,0)),
     Haber = SUM(ISNULL(d.Haber,0)), 
     Neto = SUM(CASE
@@ -75,11 +67,9 @@ AS BEGIN
                 ELSE
                   ISNULL(d.Debe,0) - ISNULL(Haber,0)
               END),
-    Sucursal = d.SucursalContable,
     d.FechaContable,
     c.Mov,
     c.MovId,
-    Referencia = cf.Referencia,
     OrigenModulo = c.OrigenTipo,
     OrigenModuloID = mf.OID,
     c.Origen,
@@ -112,14 +102,9 @@ AS BEGIN
   AND MONTH(d.FechaContable) = @Periodo
   GROUP BY
     c.ID,
-    d.Cuenta,
-    ISNULL(Cta.Descripcion,''),
-    ISNULL(d.Subcuenta,''),
-    d.SucursalContable,
     d.FechaContable,
     c.Mov,
     c.MovId,
-    cf.Referencia,
     c.OrigenTipo,
     mf.OID,
     c.Origen,

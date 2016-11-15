@@ -189,12 +189,12 @@ AS BEGIN
     aux.TipoCambio,
     ImporteTotal = SUM(ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0)),
     FluctuacionCambiariaMN = ROUND(
-                                  SUM( ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1 * ISNULL(fctorCanc.Factor,1))
+                                  SUM( ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(fctorCanc.Factor,1))
                                   ,4,1),
     ImporteTotalMN = ROUND(
                        SUM( 
                             ( ( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) )  * aux.TipoCambio )
-                          + ( ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1 ) 
+                          + ( ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(fctorCanc.Factor,1) ) 
                           )
                      , 4, 1),
     AuxiliarModulo = origenCont.AuxModulo,

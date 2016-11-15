@@ -18,9 +18,6 @@ CREATE TABLE dbo.CUP_ConciliacionCont_AuxCont
 (
   Empleado INT NOT NULL,
   ID INT NOT NULL,
-  Cuenta     CHAR(20) NOT NULL,
-  Descripcion VARCHAR(100) NULL ,
-  CentroCostos VARCHAR(50) NULL,
   Debe DECIMAL(18,4) NOT NULL,
   Haber DECIMAL(18,4) NOT NULL,
   Neto DECIMAL(18,4) NOT NULL,
@@ -37,8 +34,7 @@ CREATE TABLE dbo.CUP_ConciliacionCont_AuxCont
   AuxiliarMov VARCHAR(20) NULL,
   PRIMARY KEY ( 
                 Empleado,
-                ID,
-                Cuenta
+                ID
               )
 ) 
 
