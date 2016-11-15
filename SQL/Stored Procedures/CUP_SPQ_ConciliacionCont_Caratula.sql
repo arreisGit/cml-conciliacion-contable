@@ -29,7 +29,7 @@ GO
 -- Saldo Final              |
 -- Variacion                |
 --
--- Example: EXEC CUP_SPQ_ConciliacionCont_Caratula 63527, 1 , 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_Caratula 63527, 3 , 2016, 10
 -- =============================================
 
 
@@ -76,20 +76,18 @@ AS BEGIN
   -- Movimientos Auxiliar 
   DECLARE @ImportesAuxCx TABLE
   (
-    Modulo CHAR(5) NOT NULL,
     Mov VARCHAR(20) NOT NULL,
     ImporteDlls DECIMAL(18,4) NOT NULL,
     ImporteConversionMN DECIMAL(18,4) NOT NULL,
     ImporteMN DECIMAL(18, 4) NOT NULL,
     TotalMN DECIMAL(18, 4) NOT NULL
     PRIMARY KEY (
-                  Modulo,
                   Mov
                  )
   )
+
   INSERT INTO @ImportesAuxCx
   (
-    Modulo,
     Mov,
     ImporteDlls,
     ImporteConversionMN,
@@ -97,7 +95,6 @@ AS BEGIN
     TotalMN
   )
   SELECT 
-    Modulo,
     Mov ,
     ImporteDlls = SUM( CASE aux.Moneda 
                           WHEN 'Dlls' THEN
@@ -122,10 +119,12 @@ AS BEGIN
     CUP_ConciliacionCont_AuxCx aux
   WHERE 
     Empleado = @Empleado
-  AND aux.Cuenta <> 'SHCP'
-  GROUP BY 
-    Modulo,
+  GROUP BY
     Mov
+  ORDER BY  
+    Mov ASC
+
+ 
 
   -- Movimientos Cont 
   DECLARE @ImportesAuxCont TABLE
@@ -162,13 +161,11 @@ AS BEGIN
   ;WITH AllMovs AS 
   (
     SELECT DISTINCT
-      Modulo,
       Mov 
     FROM 
       @ImportesAuxCx
     UNION
     SELECT 
-      Modulo = AuxModulo,
       Mov = AuxMov
     FROM 
       CUP_ConciliacionCont_Tipo_OrigenContable
@@ -176,7 +173,6 @@ AS BEGIN
       Tipo = @Tipo
   ), DistinctMovs AS (
   SELECT DISTINCT
-    Modulo,
     Mov
   FROM 
     AllMovs am
@@ -204,10 +200,8 @@ AS BEGIN
     Variacion  = ISNULL(aux.TotalMN,0) - ISNULL(cont.Neto,0)
   FROM 
     DistinctMovs dm
-  LEFT JOIN @ImportesAuxCx aux ON aux.Modulo = dm.Modulo
-                              AND LTRIM(RTRIM(aux.Mov)) = LTRIM(RTRIM(dm.Mov))
-  LEFT JOIN @ImportesAuxCont cont ON cont.AuxModulo = dm.Modulo
-                                 AND LTRIM(RTRIM(cont.AuxMov)) = LTRIM(RTRIM(dm.Mov))
+  LEFT JOIN @ImportesAuxCx aux ON LTRIM(RTRIM(aux.Mov)) = LTRIM(RTRIM(dm.Mov))
+  LEFT JOIN @ImportesAuxCont cont ON LTRIM(RTRIM(cont.AuxMov)) = LTRIM(RTRIM(dm.Mov))
 
     -- Total Mes 
    INSERT INTO 

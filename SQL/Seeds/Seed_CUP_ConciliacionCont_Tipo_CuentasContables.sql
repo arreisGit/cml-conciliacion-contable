@@ -30,13 +30,15 @@ VALUES
   ,( 3, '113-403-000-0000') -- Clientes TORR
   ,( 3, '113-404-000-0000') -- Clientes  Alutodo Fusion TORR,CHIH,QRO
   ,( 3, '113-405-000-0000') -- Clientes CD.Juarez
+  ,( 3, '113-406-000-0000') -- Clientes Contado
   ,( 3, '113-601-000-0000') -- Metales Diaz SA de CV
   ,( 3, '113-602-000-0000') -- Tiendas Cuprum SA de CV
   ,( 3, '113-603-000-0000') -- Cuprum SA de CV
   ,( 3, '113-604-000-0000') -- Alutodo (NFX) SA de CV
+  ,( 3, '113-604-001-0000') -- Cuprum FAB SA DE CV
   ,( 3, '113-605-000-0000') -- Carga Inicial de Clientes Alutodo
   ,( 3, '113-701-000-0000') -- Cuenta X Cobrar a DAISA
-  ,( 3, '113-800-600-0000') -- Clientes Nacionales QRO
+  ,( 3, '113-800-400-0000') -- Clientes Nacionales QRO
   ,( 3, '213-100-000-0000') -- Anticipo Clientes GDL
   ,( 3, '213-200-000-0000') -- Anticipo Clientes MEX
   ,( 3, '213-300-000-0000') -- Anticipo Clientes MTY

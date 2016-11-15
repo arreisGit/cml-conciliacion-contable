@@ -23,7 +23,7 @@ GO
 -- Description: Obtiene los Saldos Iniciales y Finales
 -- que se usaran para la conciliacion Cotable
 -- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados 63527, 1, 2016, 9
+-- Example: EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados 63527, 3, 2016, 10
 -- =============================================
 
 
@@ -92,10 +92,29 @@ AS BEGIN
     SaldoFinal DECIMAL(18,4) NOT NULL
     PRIMARY KEY ( 
                     Mov,
-                    MovID
+                    MovID,
+                    Moneda
                 )
   )
 
+  -- Vacia los saldos AuxCx en un Consolidado.
+  DECLARE @SaldosCx TABLE
+  (
+    Ejercicio INT NOT NULL, 
+    Periodo INT NOT NULL,
+    ImporteInicialDlls DECIMAL(18,4) NOT NULL,
+    ImporteInicialConversionMN DECIMAL(18,4) NOT NULL,
+    ImporteInicialMN DECIMAL(18,4) NOT NULL,
+    ImporteInicialTotalMN DECIMAL(18,4) NOT NULL,
+    ImporteFinalDlls DECIMAL(18,4) NOT NULL,
+    ImporteFinalConversionMN DECIMAL(18,4) NOT NULL,
+    ImporteFinalMN DECIMAL(18,4) NOT NULL,
+    ImporteFinalTotalMN DECIMAL(18,4) NOT NULL
+    PRIMARY KEY (
+                  Ejercicio,
+                  Periodo
+                )
+  )
   -- 1 ) Obtenemos Antigüedad Corte Cx
   IF @Tipo = 1 
   BEGIN
@@ -153,25 +172,6 @@ AS BEGIN
               END)
         , 4, 1) <>  0
       OR ROUND( SUM( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) ), 4, 1)  <> 0
-
-      -- Vacia los saldos AuxCx en un Consolidado.
-      DECLARE @SaldosCx TABLE
-      (
-        Ejercicio INT NOT NULL, 
-        Periodo INT NOT NULL,
-        ImporteInicialDlls DECIMAL(18,4) NOT NULL,
-        ImporteInicialConversionMN DECIMAL(18,4) NOT NULL,
-        ImporteInicialMN DECIMAL(18,4) NOT NULL,
-        ImporteInicialTotalMN DECIMAL(18,4) NOT NULL,
-        ImporteFinalDlls DECIMAL(18,4) NOT NULL,
-        ImporteFinalConversionMN DECIMAL(18,4) NOT NULL,
-        ImporteFinalMN DECIMAL(18,4) NOT NULL,
-        ImporteFinalTotalMN DECIMAL(18,4) NOT NULL
-        PRIMARY KEY (
-                      Ejercicio,
-                      Periodo
-                    )
-      )
 
       INSERT INTO @SaldosCx
       (
@@ -263,6 +263,153 @@ AS BEGIN
                                           END
                     ) calc    
   END
+
+  -- SALDOS Cxc
+  ELSE IF @Tipo = 3 
+  BEGIN
+
+    INSERT INTO @AntSaldosCxCorte
+    (
+      Mov,
+      MovID,
+      Moneda,
+      SaldoInicial,
+      SaldoFinal
+    )
+    SELECT 
+      Mov = aux.Aplica,
+      MovId  = ISNULL(aux.AplicaID,''),
+      aux.Moneda,
+      SaldoInicial = SUM(CASE 
+                            WHEN CAST(aux.Fecha AS DATE) < @FechaInicio THEN
+                              ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) 
+                            ELSE 
+                              0
+                          END),
+      SaldoFinal = SUM(ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0))
+    FROM
+      CUP_v_AuxiliarCxc aux
+    LEFT JOIN CUP_ConciliacionCont_Excepciones ex ON ex.TipoConciliacion = @Tipo 
+                                                 AND ex.TipoExcepcion = 1 
+                                                 AND ex.Valor = LTRIM(RTRIM(aux.Cuenta))
+    WHERE 
+       (
+          aux.Ejercicio < @Ejercicio
+        OR (
+                aux.Ejercicio = @Ejercicio 
+            AND aux.Periodo <= @Periodo  
+            )
+        )
+    AND eX.Id IS NULL
+    GROUP BY
+      aux.Aplica,
+      aux.AplicaID,
+      aux.Moneda
+    HAVING  
+      ROUND(
+        SUM(CASE 
+              WHEN aux.Ejercicio < @Ejercicio
+                OR (aux.Ejercicio = @Ejercicio
+                    ANd aux.Periodo < @Periodo) THEN
+                  ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) 
+              ELSE 
+                0
+            END)
+      , 4, 1) <>  0
+    OR ROUND( SUM( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) ), 4, 1)  <> 0
+
+    INSERT INTO @SaldosCx
+    (
+      Ejercicio,
+      Periodo,
+      ImporteInicialDlls,
+      ImporteInicialConversionMN,
+      ImporteInicialMN,
+      ImporteInicialTotalMN,
+      ImporteFinalDlls,
+      ImporteFinalConversionMN,
+      ImporteFinalMN,
+      ImporteFinalTotalMN
+    )
+    SELECT 
+      @Ejercicio,
+      @Periodo,
+      ImporteInicialDlls = SUM(ISNULL(calc.ImporteInicialDlls,0)),
+      ImporteInicialConversionMN = SUM(ISNULL(calc.ImporteInicialConversionMN,0)),
+      ImporteInicialMN = SUM(ISNULL(calc.ImporteInicialMN,0)),
+      ImporteInicialTotalMN  =  SUM( ISNULL(calc.ImporteInicialConversionMN,0) + ISNULL(calc.ImporteInicialMN,0)),
+      ImporteFinalDlls = SUM(ISNULL(calc.ImporteFinalDlls,0)),
+      ImporteFinalConversionMN = SUM(ISNULL(calc.ImporteFinalConversionMN,0)),
+      ImporteFinalMN = SUM(ISNULL(calc.ImporteFinalMN,0)),
+      ImporteFinalTotalMN  =  SUM( ISNULL(calc.ImporteFinalConversionMN,0) + ISNULL(calc.ImporteFinalMN,0))                          
+    FROM 
+      @AntSaldosCxCorte aux
+    LEFT JOIN MovTipo t ON t.Modulo = 'Cxc'
+                       AND t.Mov = aux.Mov
+    LEFT JOIN Cxc doc ON doc.Mov = aux.Mov
+                     AND doc.MovId = aux.MovID
+    -- Factor Reevaluacion Dlls
+    CROSS APPLY(
+                  SELECT 
+                    FactorApertura = CASE 
+                                        WHEN t.Clave IN ('CXC.A','CXC.FA')
+                                        AND @FechaInicio >= '2016-05-01' 
+                                        AND 1 = 2 
+                                        THEN 
+                                            ISNULL(doc.TipoCambio,1)
+                                        ELSE 
+                                            ISNULL(@TC_Inicial,1)
+                                      END,
+                    FactorCierre =  CASE 
+                                      WHEN t.Clave IN ('CXC.A','CXC.FA') 
+                                      AND @FechaFin >= '2016-04-30' 
+                                      AND 1 = 2 THEN 
+                                          ISNULL(doc.TipoCambio,1)
+                                      ELSE 
+                                          ISNULL(@TC_Final,1)
+                                    END
+                ) rev
+      -- Calculados
+      CROSS APPLY (
+                    SELECT
+                      ImporteInicialDlls = CASE aux.Moneda
+                                              WHEN 'Dlls' THEN 
+                                                ISNULL(aux.SaldoInicial,0)
+                                              ELSE 
+                                                0
+                                            END,
+                      ImporteInicialConversionMN = CASE aux.Moneda
+                                                      WHEN 'Dlls' THEN 
+                                                        ISNULL(aux.SaldoInicial,0) * rev.FactorApertura
+                                                      ELSE 
+                                                        0
+                                                    END,  
+                      ImporteInicialMN = CASE aux.Moneda
+                                            WHEN 'Pesos' THEN 
+                                              ISNULL(aux.SaldoInicial,0)
+                                            ELSE 
+                                              0
+                                          END,
+                      ImporteFinalDlls = CASE aux.Moneda
+                                              WHEN 'Dlls' THEN 
+                                                ISNULL(aux.SaldoFinal,0)
+                                              ELSE 
+                                                0
+                                            END,
+                      ImporteFinalConversionMN = CASE aux.Moneda
+                                                    WHEN 'Dlls' THEN 
+                                                      ISNULL(aux.SaldoFinal,0) * rev.FactorCierre
+                                                    ELSE 
+                                                      0
+                                                  END,  
+                      ImporteFinalMN = CASE aux.Moneda
+                                          WHEN 'Pesos' THEN 
+                                            ISNULL(aux.SaldoFinal,0)
+                                          ELSE 
+                                            0
+                                        END
+                  ) calc   
+  END
  
   -- 2) Obtenemos los saldos Iniciales  y Finales de Cont.
   DECLARE @AuxCont TABLE
@@ -300,8 +447,9 @@ AS BEGIN
   JOIN ContD d ON cl.Cuenta = d.Cuenta
   JOIN Cont c ON d.ID = c.ID 
   OUTER APPLY( SELECT 
-                Factor = CASE ISNULL(Cta.EsAcreedora,0)
-                            WHEN 1 THEN 
+                Factor = CASE
+                            WHEN  ISNULL(Cta.EsAcreedora,0) = 1 
+                            AND  @Tipo <> 3  THEN 
                                 -1
                             ELSE 
                                 1

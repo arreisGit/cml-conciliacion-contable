@@ -36,6 +36,7 @@ SELECT
   aux.MovId,
   aux.Modulo,
   aux.ModuloID,
+  MovClave = t.Clave,
   aux.Moneda,
   aux.TipoCambio,
   aux.Ejercicio,
@@ -46,7 +47,8 @@ SELECT
   aux.EsCancelacion,
   AplicaID    = aux.ModuloID,
   AplicaMov   = aux.Aplica,
-  AplicaMovId = aux.AplicaID
+  AplicaMovId = aux.AplicaID,
+  AplicaClave = t.Clave
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
@@ -73,6 +75,7 @@ SELECT
   aux.Movid,
   aux.Modulo,
   aux.ModuloID,
+  MovClave = t.Clave,
   aux.Moneda,
   aux.TipoCambio,
   aux.Ejercicio,
@@ -83,12 +86,18 @@ SELECT
   aux.EsCancelacion,
   AplicaID = vfa.CxcID,
   AplicaMov =  c.Mov,
-  AplicaMovID = c.MovID
+  AplicaMovID = c.MovID,
+  AplicaClave = at.Clave
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
 JOIN VentaFacturaAnticipo vfa ON  vfa.ID = aux.ModuloID
+JOIN Venta v ON v.ID = vfa.ID 
+JOIN movtipo t ON t.Modulo = 'VTAS'
+              AND t.Mov = v.Mov
 JOIN Cxc c ON c.ID = vfa.CxcID
+JOIN movtipo at ON at.Modulo = 'CXC'
+               AND at.Mov = c.Mov
 --Factores
 CROSS APPLY(SELECT
               FactorCanc  = CASE
@@ -119,6 +128,7 @@ SELECT
   aux.Movid,
   aux.Modulo,
   aux.ModuloID,
+  MovClave = t.Clave,
   aux.Moneda,
   aux.TipoCambio,
   aux.Ejercicio,
@@ -129,7 +139,8 @@ SELECT
   aux.EsCancelacion,
   AplicaID = cfa.CxcID,
   AplicaMov = c.Mov,
-  AplicaMovID = c.MovID
+  AplicaMovID = c.MovID,
+  AplicaClave = at.CLave
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
@@ -137,6 +148,8 @@ JOIN Movtipo t ON t.Modulo =  aux.Modulo
               AND t.Mov    =  aux.Mov
 JOIN CxcFacturaAnticipo cfa ON  cfa.ID = aux.ModuloID
 JOIN Cxc c ON c.ID = cfa.CxcID
+JOIN Movtipo at ON at.Modulo =  'CXC'
+               AND at.Mov    =  c.Mov
 --Factores
 CROSS APPLY(SELECT
               FactorCanc  = CASE

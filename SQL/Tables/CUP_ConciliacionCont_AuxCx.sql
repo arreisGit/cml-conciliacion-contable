@@ -21,6 +21,8 @@ CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
   Empleado INT NOT NULL,
   Rama     CHAR(5) NOT NULL,
   AuxID    INT NULL,
+  Ejercicio INT NOT NULL,
+  Periodo  INT NOT NULL,
   Fecha    DATE NOT NULL,
   Sucursal INT NOT NULL,
   Cuenta   CHAR(10) NOT NULL,
@@ -69,7 +71,6 @@ INCLUDE (
           OrigenMov,
           OrigenMovID
         )
-
 
 CREATE NONCLUSTERED INDEX [IX_CUP_ConciliacionCont_AuxCx_Modulo_Mov]
 ON [dbo].[CUP_ConciliacionCont_AuxCx] ( Modulo, Mov )

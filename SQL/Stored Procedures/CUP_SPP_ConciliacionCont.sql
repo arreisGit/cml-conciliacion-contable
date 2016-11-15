@@ -12,16 +12,16 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-27
--- 
--- Description: Procedimiento encargado de genera
--- toda la informacion necesaria para realizar 
--- las conciliaciones contable.
---
--- Example: EXEC CUP_SPP_ConciliacionCont 63527, 3, 2016, 10
--- =============================================
+/* =============================================
+ Created by:    Enrique Sierra Gtez
+ Creation Date: 2016-10-27
+ 
+ Description: Procedimiento encargado de genera
+ toda la informacion necesaria para realizar 
+ las conciliaciones contable.
+
+ Example: EXEC CUP_SPP_ConciliacionCont 63527, 3, 2016, 10
+ ============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPP_ConciliacionCont
