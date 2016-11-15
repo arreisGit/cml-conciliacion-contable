@@ -32,6 +32,7 @@ AS BEGIN
   DELETE CUP_ConciliacionCont_AuxModulo
   WHERE Empleado = @Empleado
  
+  /* Saldo Proveedores */
   IF @Tipo = 1 
   BEGIN
     
@@ -45,4 +46,17 @@ AS BEGIN
     EXEC CUP_SPQ_ConciliacionCont_OrigenContGas @Empleado, @Tipo, @Ejercicio, @Periodo
 
   END 
+
+  /* Saldo Clientes */
+  IF @Tipo = 3 
+  BEGIN
+    
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContCxc @Empleado, @Tipo, @Ejercicio, @Periodo
+
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas @Empleado, @Tipo, @Ejercicio, @Periodo
+
+  END 
+
 END

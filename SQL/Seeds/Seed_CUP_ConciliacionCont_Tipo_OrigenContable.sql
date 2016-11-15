@@ -73,8 +73,7 @@ VALUES
   ( 2, 'CXP', 'Gastos Fletes',        'GAS',  'Gastos Fletes',         1, 0, 0, NULL,  NULL),
   ( 2, 'CXP', 'Gastos Generales',     'GAS',  'Gastos Generales',      1, 0, 0, NULL,  NULL),
   ( 2, 'CXP', 'Pago',                 'CXP',  'Pago',                 -1, 0, 0, NULL,  NULL),
-  -- Saldo Clientes
-   --/* Saldos Proveedores */
+   /* Saldo Clientes  */
   ( 3, 'CXC', 'Ajuste',               'CXC',  'Ajuste',                1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Ajuste Redondeo',      'CXC',  'Ajuste Redondeo',       1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Aplicacion',           'CXC',  'Aplicacion',            1, 1, 0, NULL,  NULL),
@@ -86,7 +85,7 @@ VALUES
   ( 3, 'CXC', 'Devolucion',           'CXC',  'Devolucion',           -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Devol Anticipo CFD',   'CXC',  'Devol Anticipo CFD',    1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Fact Ant Pitex CFD',   'CXC',  'Fact Ant Pitex CFD',   -1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Factura Anticipo CFD', 'CXC',  'Factura Anticipo CFD', -1, 0, 0, NULL,  NULL),
+--( 3, 'CXC', 'Factura Anticipo CFD', 'CXC',  'Factura Anticipo CFD', -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Factura Export CFD',   'VTAS', 'Factura Export CFD',    1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Factura Vta CFD',      'VTAS', 'Factura Vta CFD',       1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Cargo CFD',       'CXC',  'Nota Cargo CFD',        1, 0, 0, NULL,  NULL),
@@ -99,8 +98,8 @@ VALUES
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Expor CFD', -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Vta CFD',   -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Nota Credito CS CFD',  'CXC',  'Nota Credito CS CFD',  -1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Saldo Fact Torr',      'CXC',  'Saldo Fact Torr',      -1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Saldos Cte',           'CXC',  'Saldos Cte',           -1, 0, 0, NULL,  NULL),
+  ( 3, 'CXC', 'Saldo Fact Torr',      'CXC',  'Saldo Fact Torr',      -1, 0, 1, NULL,  NULL),
+  ( 3, 'CXC', 'Saldos Cte',           'CXC',  'Saldos Cte',           -1, 0, 1, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion',         'CXC',  'Reevaluacion',          1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion Credito', 'CXC',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL)
 
