@@ -4,7 +4,7 @@ GO
 
 /*=============================================
  Created by:    Enrique Sierra Gtez
- Creation Date: 2016-11-10
+ Creation Date: 2016-11-10r
 
  Description: Regresa el auxiliar de 
  Saldos Cxc.
@@ -13,7 +13,7 @@ GO
           FROM  CUP_v_AuxiliarCxc
           WHERE 
             Ejercicio = 2016
-          AND Periodo = 11
+          AND Periodo = 10
             
 -- ============================================*/
 

@@ -55,8 +55,8 @@ AS BEGIN
     aux.NetoMN,
     calc.FluctuacionMN,
     TotalMN = ROUND(  
-                    (aux.Neto * aux.TipoCambio)
-                  + (calc.FluctuacionMN)
+                    aux.NetoMN
+                  + calc.FluctuacionMN
               ,4,1),
     aux.EsCancelacion,
     calc.Aplica,
