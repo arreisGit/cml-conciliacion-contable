@@ -53,6 +53,6 @@ AS BEGIN
   WHERE 
     ISNULL(modulo.Empleado,cont.Empleado) = @Empleado
   AND ISNULL(modulo.AuxiliarMov, cont.AuxiliarMov ) = @Concepto
-  AND ABS(ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0)) >= 1
+  AND ABS(ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0)) >= 0.01
 
 END
