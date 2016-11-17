@@ -38,10 +38,10 @@ AS BEGIN
     aux.AuxID,
     aux.Sucursal,
     aux.Cuenta,
-    calc.Mov,
-    calc.MovId,
-    calc.Modulo,
-    calc.ModuloID,
+    aux.Mov,
+    aux.MovId,
+    aux.Modulo,
+    aux.ModuloID,
     aux.Moneda,
     aux.TipoCambio,
     aux.Ejercicio,
@@ -59,8 +59,8 @@ AS BEGIN
                   + calc.FluctuacionMN
               ,4,1),
     aux.EsCancelacion,
-    calc.Aplica,
-    calc.AplicaID,
+    aux.Aplica,
+    aux.AplicaID,
     aux.OrigenModulo,
     aux.OrigenModuloID,
     aux.OrigenMov,
@@ -84,48 +84,6 @@ AS BEGIN
                               END) f 
   -- Campos Calculados
 CROSS APPLY ( SELECT
-                Mov = CASE 
-                        WHEN ISNULL(aux.MovClave,'') = 'CXC.NC'
-                         AND aux.Mov = 'Saldos Cte' THEN
-                          ISNULL(NULLIF(aux.OrigenMov,''),aux.Mov)
-                        ELSE
-                          aux.Mov
-                      END,
-                MovId = CASE
-                          WHEN ISNULL(aux.MovClave,'') = 'CXC.NC'
-                           AND aux.Mov = 'Saldos Cte' THEN
-                            ISNULL(NULLIF(aux.OrigenMovID,''),aux.MovID)
-                          ELSE
-                            aux.MovID
-                        END, 
-                Modulo = CASE
-                            WHEN ISNULL(aux.MovClave,'') = 'CXC.NC'
-                           AND aux.Mov = 'Saldos Cte' THEN
-                              'CXC'
-                            ELSE
-                              aux.Modulo
-                          END,
-                ModuloID = CASE 
-                              WHEN ISNULL(aux.MovClave,'') = 'CXC.NC'
-                           AND aux.Mov = 'Saldos Cte' THEN
-                                1
-                              ELSE
-                               aux.ModuloID
-                            END,
-                Aplica =  CASE
-                            WHEN ISNULL(aux.MovClave,'') = 'CXC.NC'
-                           AND aux.Mov = 'Saldos Cte' THEN
-                               aux.Mov
-                            ELSE
-                               aux.Aplica
-                          END,
-                AplicaId = CASE
-                              WHEN ISNULL(aux.MovClave,'') = 'CXC.NC'
-                               AND aux.Mov = 'Saldos Cte' THEN
-                                  aux.MovID
-                                ELSE
-                                  aux.AplicaID
-                              END, 
                 FluctuacionMN =  ROUND(ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(f.FactorCanc,1),4,1)
             ) Calc
   WHERE 

@@ -176,9 +176,9 @@ AS BEGIN
   SELECT 
     Empleado = @Empleado,
     origenCont.Modulo,
-    m.ID,
-    m.Mov,
-    m.MovId,
+    aux.ModuloID,
+    aux.Mov,
+    aux.MovId,
     aux.Sucursal,
     m.FechaEmision,
     Cuenta = m.Cliente,
@@ -202,9 +202,8 @@ AS BEGIN
     PolizaID  = pf.DID
   FROM 
     CUP_ConciliacionCont_Tipo_OrigenContable origenCont
-  JOIN Auxiliar aux ON aux.Modulo = origenCont.Modulo
-                   AND aux.Mov    = origenCont.Mov
-  JOIN rama r ON r.Rama = aux.Rama
+  JOIN CUP_v_AuxiliarCxc aux ON aux.Modulo = origenCont.Modulo
+                            AND aux.Mov    = origenCont.Mov
   JOIN Cte ON Cte.Cliente = aux.Cuenta
   JOIN Cxc m ON m.ID = aux.ModuloID
   -- Factor Canceclacion
@@ -263,7 +262,6 @@ AS BEGIN
       origenCont.Tipo = @Tipo 
   AND origenCont.UsarAuxiliarNeto = 1 
   AND origenCont.Modulo = 'CXC'
-  AND r.Mayor = 'CXC'
   AND aux.Ejercicio = @Ejercicio
   AND aux.Periodo = @Periodo
   AND (  origenCont.ValidarOrigen = 0
@@ -277,9 +275,9 @@ AS BEGIN
   AND eX.ID IS NULL
   GROUP BY 
     origenCont.Modulo,
-    m.ID,
-    m.Mov,
-    m.MovId,
+    aux.ModuloID,
+    aux.Mov,
+    aux.MovId,
     aux.Sucursal,
     m.FechaEmision,
     m.Cliente,

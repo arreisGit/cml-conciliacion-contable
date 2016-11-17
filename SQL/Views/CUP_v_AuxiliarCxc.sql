@@ -28,10 +28,10 @@ SELECT
   AuxID = a.ID,
   a.Sucursal,
   a.Cuenta,
-  a.Mov,
-  a.MovId,
-  a.Modulo,
-  a.ModuloID,
+  calc.Mov,
+  calc.MovId,
+  calc.Modulo,
+  calc.ModuloID,
   MovClave = t.Clave,
   a.Moneda,
   a.TipoCambio,
@@ -45,8 +45,8 @@ SELECT
   AbonoMN = ROUND(ISNULL(a.Abono,0) * a.TipoCambio,4,1),
   NetoMN =  ROUND(ISNULL(calc.Neto,0) * a.TipoCambio,4,1),
   a.EsCancelacion,
-  a.Aplica,
-  a.AplicaID,
+  calc.Aplica,
+  calc.AplicaID,
   AplicaClave = at.Clave,
   OrigenModulo = ISNULL(c.OrigenTipo,''),
   OrigenModuloID = ISNULL(CAST(v.ID AS VARCHAR),''),
@@ -76,6 +76,48 @@ CROSS APPLY(SELECT
                             END) f 
 -- Campos Calculados
 CROSS APPLY ( SELECT
+                Mov = CASE 
+                      WHEN ISNULL(t.Clave,'') = 'CXC.NC'
+                        AND a.Mov = 'Saldos Cte' THEN
+                        ISNULL(NULLIF(c.Origen,''),a.Mov)
+                      ELSE
+                        a.Mov
+                    END,
+                MovId = CASE
+                          WHEN ISNULL(t.Clave,'') = 'CXC.NC'
+                            AND a.Mov = 'Saldos Cte' THEN
+                            ISNULL(NULLIF(c.OrigenID,''),a.MovID)
+                          ELSE
+                            a.MovID
+                        END, 
+                Modulo = CASE
+                            WHEN ISNULL(t.Clave,'') = 'CXC.NC'
+                            AND a.Mov = 'Saldos Cte' THEN
+                              'CXC'
+                            ELSE
+                              a.Modulo
+                          END,
+                ModuloID = CASE 
+                              WHEN ISNULL(t.Clave,'') = 'CXC.NC'
+                            AND a.Mov = 'Saldos Cte' THEN
+                                1
+                              ELSE
+                                a.ModuloID
+                            END,
+                Aplica =  CASE
+                            WHEN ISNULL(t.Clave,'') = 'CXC.NC'
+                            AND a.Mov = 'Saldos Cte' THEN
+                                a.Mov
+                            ELSE
+                                a.Aplica
+                          END,
+                AplicaId = CASE
+                              WHEN ISNULL(t.Clave,'') = 'CXC.NC'
+                                AND a.Mov = 'Saldos Cte' THEN
+                                  a.MovID
+                                ELSE
+                                  a.AplicaID
+                              END, 
                 Neto = ISNULL(a.Cargo,0) - ISNULL( a.Abono,0)
             ) Calc
 WHERE 
