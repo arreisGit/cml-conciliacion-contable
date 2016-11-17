@@ -356,21 +356,20 @@ SELECT
   Importe = importe_aplica.Importe,
   TipoCambioReevaluado  = tcRev.TipoCambio,
   TipoCambioPago  = p.ProveedorTipoCambio,
-  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
-  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
+  ImporteMN_TC_Rev = calc.ImporteMNTCRev,
+  ImporteMN_TC_Pago = calc.ImporteMNTCAplica,
   Factor = -1,
   DiferenciaMN = ROUND((  
-                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
-                       ) * -1,4,1)
+                          ISNULL(calc.ImporteMNTCAplica,0)
+                        - ISNULL(calc.ImporteMNTCRev,0)
+                       ) * calc.FactorDiff,4,1)
 FROM
   Cxp p 
-JOIN Movtipo t ON t.Modulo = 'Cxp'
+JOIN Movtipo t ON t.Modulo = 'CXP'
               AND t.Mov = p.Mov 
 JOIN CxpD d ON d.id = p.id
-JOIN Movtipo dt ON dt.Modulo = 'Cxp'
+JOIN Movtipo dt ON dt.Modulo = 'CXP'
                 AND dt.Mov = d.Aplica
-
 JOIN Cxp doc ON doc.Mov = d.Aplica
                AND doc.Movid = d.AplicaID
 -- Importe Aplica 
@@ -422,19 +421,26 @@ OUTER APPLY(
             SELECT 
               TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
             ) tcRev
--- Importes MN para el calculo
+-- Campos Calculados
 CROSS APPLY( 
             SELECT
+              FactorDiff = CASE t.Clave
+                            WHEN 'CXP.DC' THEN 
+                              1
+                            ELSE 
+                              -1
+                           END,
               ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
-            ) importes_calculo
+            ) calc
 WHERE 
     p.Estatus IN ('CONCLUIDO','CANCELADO')
 AND p.ProveedorMoneda <> 'Pesos'
-AND t.clave IN ('CXP.P','CXP.ANC')
+AND t.clave IN ('CXP.P','CXP.ANC','CXP.DC')
 AND ISNULL(d.Importe,0) <> 0
 AND d.Aplica NOT IN ('Redondeo','Saldo a Favor')
-AND dt.Clave <> 'CXP.NC'
+AND NOT(   t.Clave IN ('CXP.P','CXP.ANC')
+        AND dt.Clave = 'CXP.NC')
 
 UNION -- Aplicaciones Pagos
 
