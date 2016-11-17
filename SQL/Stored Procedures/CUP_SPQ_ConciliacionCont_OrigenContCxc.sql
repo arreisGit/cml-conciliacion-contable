@@ -108,7 +108,7 @@ AS BEGIN
                                         * (m.TipoCambio / m.ClienteTipoCambio), 4, 1)
               ) conversion_doc 
   -- Fluctuacion Cambiaria
-  CROSS APPLY(SELECT
+  OUTER APPLY(SELECT
                 DiferenciaCambiaria = SUM( ISNULL( dc.Diferencia_Cambiaria_MN, 0 ) )
                                     * ISNULL( origenCont.Factor, 1 )
               FROM 

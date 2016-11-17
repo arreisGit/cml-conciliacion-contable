@@ -80,12 +80,15 @@ AS BEGIN
     ImporteTotal = calc.ImporteTotal
                   * ISNULL(origenCont.Factor,1) 
                   * eV.Factor,
-    FluctuacionCambiariaMN = 0,
+    FluctuacionCambiariaMN = ISNULL(fc.DiferenciaCambiaria,0),
     ImporteTotalMN = ROUND(
-                            calc.ImporteTotal
-                          * m.TipoCambio
-                          * ISNULL(origenCont.Factor,1) 
-                          * eV.Factor
+                            ( 
+                              calc.ImporteTotal
+                            * m.TipoCambio
+                            * ISNULL(origenCont.Factor,1) 
+                            * eV.Factor
+                            )
+                          + ISNULL(fc.DiferenciaCambiaria,0)
                       , 4, 1),
 
     AuxiliarModulo = origenCont.AuxModulo,
@@ -96,6 +99,16 @@ AS BEGIN
   JOIN Venta m ON origenCont.Mov = m.Mov
   JOIN Cte ON Cte.Cliente = m.Cliente
   JOIN @EstatusValidos eV ON eV.Estatus = m.Estatus
+  -- Fluctuacion Cambiaria
+  OUTER APPLY(SELECT
+                DiferenciaCambiaria = SUM( ISNULL( dc.Diferencia_Cambiaria_MN, 0 ) )
+                                    * ISNULL( origenCont.Factor, 1 )
+                                    * ev.Factor
+              FROM 
+                CUP_v_CxDiferenciasCambiarias dc
+              WHERE
+                dc.Modulo = origenCont.Modulo
+              AND dc.ModuloID = m.ID) fc
   -- CALC
   CROSS APPLY(
               SELECT
