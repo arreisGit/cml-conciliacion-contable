@@ -83,7 +83,6 @@ AS BEGIN
                  * eV.Factor,
     FluctuacionCambiariaMN = ROUND(
                               ISNULL(fc.DiferenciaCambiaria,0)
-                            * ISNULL(origenCont.Factor,1)
                             * eV.Factor 
                         , 4, 1),
     ImporteTotalMN = ROUND(
@@ -110,7 +109,8 @@ AS BEGIN
               ) conversion_doc 
   -- Fluctuacion Cambiaria
   CROSS APPLY(SELECT
-                DiferenciaCambiaria = SUM(ISNULL(dc.Diferencia_Cambiaria_MN,0))
+                DiferenciaCambiaria = SUM( ISNULL( dc.Diferencia_Cambiaria_MN, 0 ) )
+                                    * ISNULL( origenCont.Factor, 1 )
               FROM 
                 CUP_v_CxDiferenciasCambiarias dc
               WHERE
