@@ -103,7 +103,8 @@ VALUES
   ( 3, 'CXC', 'Saldo Fact Torr',      'CXC',  'Saldo Fact Torr',      -1, 0, 1, NULL,  NULL),
   ( 3, 'CXC', 'Saldos Cte',           'CXC',  'Saldos Cte',           -1, 0, 1, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion',         'CXC',  'Reevaluacion',          1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Reevaluacion Credito', 'CXC',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL)
+  ( 3, 'CXC', 'Reevaluacion Credito', 'CXC',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
+  ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',   1, 0, 0, NULL,  NULL)
 
 
 SELECT
