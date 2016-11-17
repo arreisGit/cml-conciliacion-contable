@@ -84,6 +84,7 @@ VALUES
   ( 3, 'CXC', 'Cheque Devuelto',      'CXC',  'Cheque Devuelto',       1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Devolucion',           'CXC',  'Devolucion',           -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Devol Anticipo CFD',   'CXC',  'Devol Anticipo CFD',    1, 0, 0, NULL,  NULL),
+  ( 3, 'CXC', 'Devol Anticipo',       'CXC',  'Devol Anticipo',        1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Fact Ant Pitex CFD',   'CXC',  'Fact Ant Pitex CFD',   -1, 0, 0, NULL,  NULL),
 --( 3, 'CXC', 'Factura Anticipo CFD', 'CXC',  'Factura Anticipo CFD', -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Factura Export CFD',   'VTAS', 'Factura Export CFD',    1, 0, 0, NULL,  NULL),
