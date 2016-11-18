@@ -61,7 +61,6 @@ AS BEGIN
     aux.AplicaID,
     aux.EsCancelacion,
     OrigenModulo = ISNULL(p.OrigenTipo,''),
-    OrigenModuloID = ISNULL(CAST(ISNULL(c.ID,g.ID) AS VARCHAR),''),
     OrigenMov = ISNULL(p.Origen,''),
     OrigenMovID = ISNULL(p.OrigenID,'')
   FROM
@@ -73,12 +72,6 @@ AS BEGIN
   JOIN Cxp p ON 'CXP' = aux.Modulo
             AND p.ID = aux.ModuloID
   JOIN Prov ON prov.Proveedor = Aux.Cuenta
-  LEFT JOIN Compra c ON 'COMS' = p.OrigenTipo
-                    AND c.Mov = p.Origen
-                    AND c.MovID = p.OrigenID
-  LEFT JOIN Gasto g ON 'GAS' = p.OrigenTipo
-                    AND g.Mov = p.Origen
-                    AND g.MovID = p.OrigenID
   -- Factor Canceclacion
   CROSS APPLY(SELECT
                 Factor  = CASE ISNULL(aux.EsCancelacion,0) 

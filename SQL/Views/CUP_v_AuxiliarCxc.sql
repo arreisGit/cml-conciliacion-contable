@@ -49,7 +49,6 @@ SELECT
   calc.AplicaID,
   AplicaClave = at.Clave,
   OrigenModulo = ISNULL(c.OrigenTipo,''),
-  OrigenModuloID = ISNULL(CAST(v.ID AS VARCHAR),''),
   OrigenMov = ISNULL(c.Origen,''),
   OrigenMovID = ISNULL(c.OrigenID,'')
 FROM 
@@ -58,10 +57,6 @@ JOIN Rama r on r.Rama = a.Rama
 JOIN Movtipo t ON t.Modulo = a.Modulo
               AND t.Mov  = a.Mov  
 LEFT JOIN Cxc c ON c.ID = a.ModuloID
-LEFT JOIN Venta v ON 'VTAS' = c.OrigenTipo
-                  AND v.Mov = c.Origen
-                  AND v.MovID = c.OrigenID
-                  AND v.Estatus IN ('PENDIENTE','CONCLUIDO')
 LEFT JOIN cxc aplica ON aplica.Mov = a.Aplica
                     AND aplica.Movid = a.AplicaID
 LEFT JOIN Movtipo at ON at.Modulo = 'CXC'
@@ -145,7 +140,6 @@ SELECT
   AplicaID = a.AplicaMovID,
   a.AplicaClave,
   OrigenModulo = '',
-  OrigenModuloID = '',
   OrigenMov = '',
   OrigenMovID = ''
 FROM 
@@ -183,8 +177,7 @@ UNION -- Reevaluaciones del Mes
     d.Aplica,
     d.AplicaID,
     AplicaClave = at.Clave,
-    OrigenModulo =  ' ',
-    OrigenModuloID = ' ',
+    OrigenModulo =  '',
     OrigenMov = '',
     OrigenMovID = ''
   FROM 

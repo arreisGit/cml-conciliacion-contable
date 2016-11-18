@@ -44,7 +44,6 @@ CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
   AplicaID          VARCHAR(20) NULL,
   EsCancelacion     BIT NOT NULL,  
   OrigenModulo      VARCHAR(10) NULL,
-  OrigenModuloID    INT NULL,
   OrigenMov         CHAR(20) NULL,
   OrigenMovID       VARCHAR(20) NULL
 ) 
@@ -67,7 +66,6 @@ INCLUDE (
           AbonoMN,
           FluctuacionMN,
           OrigenModulo,
-          OrigenModuloID,
           OrigenMov,
           OrigenMovID
         )
@@ -86,7 +84,6 @@ INCLUDE (
           AbonoMN,
           FluctuacionMN,
           OrigenModulo,
-          OrigenModuloID,
           OrigenMov,
           OrigenMovID
         )

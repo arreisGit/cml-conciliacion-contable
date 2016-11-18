@@ -70,7 +70,6 @@ AS BEGIN
       Aplica,
       AplicaID,
       OrigenModulo,
-      OrigenModuloID,
       OrigenMov,
       OrigenMovID
     )
@@ -110,7 +109,6 @@ AS BEGIN
       AplicaID,
       EsCancelacion,
       OrigenModulo,
-      OrigenModuloID,
       OrigenMov,
       OrigenMovID
     )
@@ -150,7 +148,6 @@ AS BEGIN
       Aplica,
       AplicaID,
       OrigenModulo,
-      OrigenModuloID,
       OrigenMov,
       OrigenMovID
     )

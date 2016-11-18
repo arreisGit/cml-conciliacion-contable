@@ -60,7 +60,6 @@ AS BEGIN
     aux.Aplica,
     aux.AplicaID,
     aux.OrigenModulo,
-    aux.OrigenModuloID,
     aux.OrigenMov,
     aux.OrigenMovID
   FROM
