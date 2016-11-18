@@ -4,10 +4,10 @@ GO
 
 IF EXISTS (SELECT * 
 		   FROM SYSOBJECTS 
-		   WHERE ID = OBJECT_ID('dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxc') AND 
+		   WHERE ID = OBJECT_ID('dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxp') AND 
 				 TYPE = 'P')
 BEGIN
-  DROP PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxc
+  DROP PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxp
 END	
 
 
@@ -15,15 +15,15 @@ GO
 
 -- =============================================
 -- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-11-11
+-- Creation Date: 2016-11-18
 --
 -- Description: Obtiene los auxiliares de
--- los Saldos Cxc 
--- Example: EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxc 63527, 3, 2016, 10
+-- los Saldos Cxp 
+-- Example: EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxp 63527, 3, 2016, 10
 -- =============================================
 
 
-CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxc
+CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxp
   @Empleado INT,
   @Tipo INT,
   @Ejercicio INT,
@@ -66,7 +66,7 @@ AS BEGIN
     aux.OrigenMov,
     aux.OrigenMovID
   FROM
-    CUP_v_AuxiliarCxc aux
+    CUP_v_AuxiliarCxp aux
   LEFT JOIN CUP_ConciliacionCont_Excepciones ex ON ex.TipoConciliacion = @Tipo 
                                                AND ex.TipoExcepcion = 1 
                                                AND ex.Valor = LTRIM(RTRIM(aux.Cuenta))
@@ -76,16 +76,15 @@ AS BEGIN
                                           AND fc.DocumentoID = aux.AplicaID
   -- Factores
   CROSS APPLY(SELECT
-                FactorCancelacion  = CASE ISNULL(aux.EsCancelacion,0) 
-                                        WHEN 1 THEN
-                                          -1
-                                        ELSE 
-                                          1
-                                      END) f 
+                FactorCanc  = CASE ISNULL(aux.EsCancelacion,0) 
+                                WHEN 1 THEN
+                                  -1
+                                ELSE 
+                                  1
+                              END) f 
   -- Campos Calculados
 CROSS APPLY ( SELECT
-                FluctuacionMN =  ROUND(  ISNULL(fc.Diferencia_Cambiaria_MN,0) 
-                                       * ISNULL(f.FactorCancelacion,1), 4, 1 )
+                FluctuacionMN =  ROUND(ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(f.FactorCanc,1),4,1)
             ) Calc
   WHERE 
     aux.Ejercicio = @Ejercicio

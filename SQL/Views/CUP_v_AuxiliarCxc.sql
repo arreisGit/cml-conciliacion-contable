@@ -66,14 +66,6 @@ LEFT JOIN cxc aplica ON aplica.Mov = a.Aplica
                     AND aplica.Movid = a.AplicaID
 LEFT JOIN Movtipo at ON at.Modulo = 'CXC'
                     AND at.Mov = a.Aplica
--- Factores
-CROSS APPLY(SELECT
-              FactorCanc  = CASE ISNULL(a.EsCancelacion,0) 
-                              WHEN 1 THEN
-                                -1
-                              ELSE 
-                                1
-                            END) f 
 -- Campos Calculados
 CROSS APPLY ( SELECT
                 Mov = CASE 
@@ -125,7 +117,7 @@ WHERE
 AND a.Modulo = 'CXC'
 AND t.Clave NOT IN ('CXC.SCH','CXC.SD')
 
-UNION  -- Kike Sierra: 2016-11-09: Saldo al corte facturas anticipo
+UNION  -- Saldo al corte facturas anticipo
 
 SELECT
   a.Rama,
@@ -181,14 +173,13 @@ UNION -- Reevaluaciones del Mes
     c.Ejercicio,
     c.Periodo,
     Fecha = CAST(c.FechaEmision AS DATE),
-      Cargo = 0,
+    Cargo = 0,
     Abono = 0,
     Neto = 0,
     CargoMN = ISNULL(impCargoAbono.Cargo,0),
     AbonoMN = ISNULL(impCargoAbono.Abono,0),
     NetoMN = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
     EsCancelacion = 0,
-    --AplicaID = doc.ID,
     d.Aplica,
     d.AplicaID,
     AplicaClave = at.Clave,
@@ -202,8 +193,6 @@ UNION -- Reevaluaciones del Mes
   JOIN CxcD d ON d.Id = c.ID
   JOIN movtipo t ON t.Modulo = 'CXC'
                 AND t.Mov  = c.Mov 
-  LEFT JOIN cxc doc ON doc.Mov = d.Aplica
-                    AND doc.MovID = d.AplicaID
   LEFT JOIN movtipo at ON at.Modulo = 'CXC'
                       AND at.Mov = d.Aplica
   -- Cargos Abonos ( para mantener el formato del auxiliar )
@@ -222,7 +211,6 @@ UNION -- Reevaluaciones del Mes
                               0
                           END
                 ) impCargoAbono
-  LEFT JOIN Cont pol ON pol.ID = c.ContID
   WHERE 
     t.Clave = 'CXC.RE'
   AND c.Estatus = 'CONCLUIDO'
