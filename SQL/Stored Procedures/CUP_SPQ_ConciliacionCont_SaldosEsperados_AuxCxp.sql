@@ -109,7 +109,7 @@ AS BEGIN
                                                 AND ex.TipoExcepcion = 1
                                                 AND ex.Valor = aux.cuenta
   WHERE 
-    aux.Rama <> 'RESV'
+    aux.Rama <> 'REV'
   AND (
           aux.Ejercicio < @Ejercicio
       OR (
