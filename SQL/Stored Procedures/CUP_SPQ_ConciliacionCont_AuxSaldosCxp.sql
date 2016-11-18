@@ -10,7 +10,6 @@ BEGIN
   DROP PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxp
 END	
 
-
 GO
 
 -- =============================================
@@ -21,7 +20,6 @@ GO
 -- los Saldos Cxp 
 -- Example: EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxp 63527, 3, 2016, 10
 -- =============================================
-
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxp
   @Empleado INT,
@@ -84,7 +82,7 @@ AS BEGIN
                               END) f 
   -- Campos Calculados
 CROSS APPLY ( SELECT
-                FluctuacionMN =  ROUND(ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(f.FactorCanc,1),4,1)
+                FluctuacionMN =  ROUND( -ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(f.FactorCanc,1),4,1)
             ) Calc
   WHERE 
     aux.Ejercicio = @Ejercicio

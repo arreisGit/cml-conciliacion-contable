@@ -42,7 +42,7 @@ AS BEGIN
 
   SET NOCOUNT ON;
   
-  DECLARE @Caratula TABLE
+  CREATE TABLE ##tmp_CUP_ConciliacionCont_Caratula
   (
     Orden               INT NOT NULL,
     Concepto            VARCHAR(50) NOT NULL,
@@ -59,19 +59,7 @@ AS BEGIN
   )
 
   -- 1) Saldo Iniciales y Finales Esperados
-  INSERT INTO @Caratula
-  (
-    Orden,
-    Concepto,
-    ImporteDlls,
-    ImporteConversionMN,
-    ImporteMN,
-    TotalMN,
-    Contabilidad,
-    Variacion
-  )
-  EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados @Empleado, @Tipo, @Ejercicio, @Periodo
-
+  EXEC CUP_SPI_ConciliacionCont_SaldosEsperados @Empleado, @Tipo, @Ejercicio, @Periodo
 
   -- Movimientos Auxiliar 
   DECLARE @ImportesAuxCx TABLE
@@ -178,7 +166,7 @@ AS BEGIN
     AllMovs am
  )
  INSERT INTO 
-  @Caratula
+  ##tmp_CUP_ConciliacionCont_Caratula
  (
     Orden,
     Concepto,
@@ -203,92 +191,92 @@ AS BEGIN
   LEFT JOIN @ImportesAuxCx aux ON LTRIM(RTRIM(aux.Mov)) = LTRIM(RTRIM(dm.Mov))
   LEFT JOIN @ImportesAuxCont cont ON LTRIM(RTRIM(cont.AuxMov)) = LTRIM(RTRIM(dm.Mov))
 
-    -- Total Mes 
-   INSERT INTO 
-    @Caratula
-   (
-      Orden,
-      Concepto,
-      ImporteDlls,
-      ImporteConversionMN,
-      ImporteMN,
-      TotalMN,
-      Contabilidad,
-      Variacion
-   )
-   SELECT 
-      Orden =  3,
-      Concepto = 'Total Mes',
-      ImporteDlls = SUM(ISNULL(ImporteDlls,0)),
-      ImporteConversionMN = SUM(ISNULL(ImporteConversionMN,0)),
-      ImporteMN = SUM(ISNULL(ImporteMN,0)),
-      TotalMN = SUM(ISNULL(TotalMN,0)),
-      Contabilidad = SUM(ISNULL(Contabilidad,0)),
-      Variacion  = SUM(ISNULL(Variacion,0))
-    FROM 
-      @Caratula
-    WHERE 
-      Orden IN (2)
+  -- Total Mes 
+  INSERT INTO 
+    ##tmp_CUP_ConciliacionCont_Caratula
+  (
+    Orden,
+    Concepto,
+    ImporteDlls,
+    ImporteConversionMN,
+    ImporteMN,
+    TotalMN,
+    Contabilidad,
+    Variacion
+  )
+  SELECT 
+    Orden =  3,
+    Concepto = 'Total Mes',
+    ImporteDlls = SUM(ISNULL(ImporteDlls,0)),
+    ImporteConversionMN = SUM(ISNULL(ImporteConversionMN,0)),
+    ImporteMN = SUM(ISNULL(ImporteMN,0)),
+    TotalMN = SUM(ISNULL(TotalMN,0)),
+    Contabilidad = SUM(ISNULL(Contabilidad,0)),
+    Variacion  = SUM(ISNULL(Variacion,0))
+  FROM 
+    ##tmp_CUP_ConciliacionCont_Caratula
+  WHERE 
+    Orden IN (2)
 
   -- Saldo Final Calculado 
-   INSERT INTO 
-    @Caratula
-   (
-      Orden,
-      Concepto,
-      ImporteDlls,
-      ImporteConversionMN,
-      ImporteMN,
-      TotalMN,
-      Contabilidad,
-      Variacion
-   )
-   SELECT 
-      Orden =  5,
-      Concepto = 'Saldo Final Calculado',
-      ImporteDlls = SUM(ISNULL(ImporteDlls,0)),
-      ImporteConversionMN = SUM(ISNULL(ImporteConversionMN,0)),
-      ImporteMN = SUM(ISNULL(ImporteMN,0)),
-      TotalMN = SUM(ISNULL(TotalMN,0)),
-      Contabilidad = SUM(ISNULL(Contabilidad,0)),
-      Variacion  = SUM(ISNULL(Variacion,0))
-    FROM 
-      @Caratula
-    WHERE 
-      Orden IN (1,3) -- Saldos Iniciales + Total Mes
+  INSERT INTO 
+    ##tmp_CUP_ConciliacionCont_Caratula
+  (
+    Orden,
+    Concepto,
+    ImporteDlls,
+    ImporteConversionMN,
+    ImporteMN,
+    TotalMN,
+    Contabilidad,
+    Variacion
+  )
+  SELECT 
+    Orden =  5,
+    Concepto = 'Saldo Final Calculado',
+    ImporteDlls = SUM(ISNULL(ImporteDlls,0)),
+    ImporteConversionMN = SUM(ISNULL(ImporteConversionMN,0)),
+    ImporteMN = SUM(ISNULL(ImporteMN,0)),
+    TotalMN = SUM(ISNULL(TotalMN,0)),
+    Contabilidad = SUM(ISNULL(Contabilidad,0)),
+    Variacion  = SUM(ISNULL(Variacion,0))
+  FROM 
+    ##tmp_CUP_ConciliacionCont_Caratula
+  WHERE 
+    Orden IN (1,3) -- Saldos Iniciales + Total Mes
  
   -- Variacion  
-   INSERT INTO 
-    @Caratula
-   (
-      Orden,
-      Concepto,
-      ImporteDlls,
-      ImporteConversionMN,
-      ImporteMN,
-      TotalMN,
-      Contabilidad,
-      Variacion
-   )
-   SELECT 
-      Orden =  6,
-      'Variacion',
-      ImporteDlls = ISNULL(esperado.ImporteDlls,0) 
-                  - ISNULL(calc.ImporteDlls,0),
-      ImporteConversionMN = ISNULL(esperado.ImporteConversionMN,0) 
-                  - ISNULL(calc.ImporteConversionMN,0),
-      ImporteMN = ISNULL(esperado.ImporteMN,0) 
-                  - ISNULL(calc.ImporteMN,0),
-      TotalMN = ISNULL(esperado.TotalMN,0) 
-                  - ISNULL(calc.TotalMN,0),
-      Contabilidad = ISNULL(esperado.Contabilidad,0) 
-                  - ISNULL(calc.Contabilidad,0),
-      Variacion  = NULL
-    FROM 
-      @Caratula esperado
-    LEFT JOIN @Caratula calc ON calc.Orden = 5
-    WHERE 
-      esperado.Orden = 4 
+  INSERT INTO 
+    ##tmp_CUP_ConciliacionCont_Caratula
+  (
+    Orden,
+    Concepto,
+    ImporteDlls,
+    ImporteConversionMN,
+    ImporteMN,
+    TotalMN,
+    Contabilidad,
+    Variacion
+  )
+  SELECT 
+    Orden =  6,
+    'Variacion',
+    ImporteDlls = ISNULL(esperado.ImporteDlls,0) 
+                - ISNULL(calc.ImporteDlls,0),
+    ImporteConversionMN = ISNULL(esperado.ImporteConversionMN,0) 
+                - ISNULL(calc.ImporteConversionMN,0),
+    ImporteMN = ISNULL(esperado.ImporteMN,0) 
+                - ISNULL(calc.ImporteMN,0),
+    TotalMN = ISNULL(esperado.TotalMN,0) 
+                - ISNULL(calc.TotalMN,0),
+    Contabilidad = ISNULL(esperado.Contabilidad,0) 
+                - ISNULL(calc.Contabilidad,0),
+    Variacion  = NULL
+  FROM 
+    ##tmp_CUP_ConciliacionCont_Caratula esperado
+  LEFT JOIN ##tmp_CUP_ConciliacionCont_Caratula calc ON calc.Orden = 5
+  WHERE 
+    esperado.Orden = 4 
 
   
   -- Regresa La Caratula Final
@@ -302,7 +290,7 @@ AS BEGIN
     Contabilidad = CAST(Contabilidad AS FLOAT),
     Variacion = CAST(Variacion AS FLOAT)
   FROM 
-    @Caratula  
+    ##tmp_CUP_ConciliacionCont_Caratula  
   ORDER BY
     Orden,
     Concepto
