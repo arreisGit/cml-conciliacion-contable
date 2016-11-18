@@ -22,7 +22,6 @@ GO
 -- Example: EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados 63527, 3, 2016, 10
 -- =============================================
 
-
 CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_SaldosEsperados
   @Empleado   INT,
   @Tipo      INT,
@@ -336,7 +335,7 @@ AS BEGIN
 
   -- 3 ) Integra los Saldos de Cx y Cont en el formato
   -- adecuado para su retorno.
-  INSERT INTO ##tmp_CUP_ConciliacionCont_Caratula
+  INSERT INTO #tmp_CUP_ConciliacionCont_Caratula
   (
     Orden,
     Concepto,

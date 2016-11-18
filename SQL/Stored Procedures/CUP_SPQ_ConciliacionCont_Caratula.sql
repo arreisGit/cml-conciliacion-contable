@@ -32,7 +32,6 @@ GO
 -- Example: EXEC CUP_SPQ_ConciliacionCont_Caratula 63527, 3 , 2016, 10
 -- =============================================
 
-
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_Caratula
   @Empleado   INT, 
   @Tipo       INT,
@@ -42,7 +41,7 @@ AS BEGIN
 
   SET NOCOUNT ON;
   
-  CREATE TABLE ##tmp_CUP_ConciliacionCont_Caratula
+  CREATE TABLE #tmp_CUP_ConciliacionCont_Caratula
   (
     Orden               INT NOT NULL,
     Concepto            VARCHAR(50) NOT NULL,
@@ -166,7 +165,7 @@ AS BEGIN
     AllMovs am
  )
  INSERT INTO 
-  ##tmp_CUP_ConciliacionCont_Caratula
+  #tmp_CUP_ConciliacionCont_Caratula
  (
     Orden,
     Concepto,
@@ -193,7 +192,7 @@ AS BEGIN
 
   -- Total Mes 
   INSERT INTO 
-    ##tmp_CUP_ConciliacionCont_Caratula
+    #tmp_CUP_ConciliacionCont_Caratula
   (
     Orden,
     Concepto,
@@ -214,13 +213,13 @@ AS BEGIN
     Contabilidad = SUM(ISNULL(Contabilidad,0)),
     Variacion  = SUM(ISNULL(Variacion,0))
   FROM 
-    ##tmp_CUP_ConciliacionCont_Caratula
+    #tmp_CUP_ConciliacionCont_Caratula
   WHERE 
     Orden IN (2)
 
   -- Saldo Final Calculado 
   INSERT INTO 
-    ##tmp_CUP_ConciliacionCont_Caratula
+    #tmp_CUP_ConciliacionCont_Caratula
   (
     Orden,
     Concepto,
@@ -241,13 +240,13 @@ AS BEGIN
     Contabilidad = SUM(ISNULL(Contabilidad,0)),
     Variacion  = SUM(ISNULL(Variacion,0))
   FROM 
-    ##tmp_CUP_ConciliacionCont_Caratula
+    #tmp_CUP_ConciliacionCont_Caratula
   WHERE 
     Orden IN (1,3) -- Saldos Iniciales + Total Mes
  
   -- Variacion  
   INSERT INTO 
-    ##tmp_CUP_ConciliacionCont_Caratula
+    #tmp_CUP_ConciliacionCont_Caratula
   (
     Orden,
     Concepto,
@@ -273,12 +272,11 @@ AS BEGIN
                 - ISNULL(calc.Contabilidad,0),
     Variacion  = NULL
   FROM 
-    ##tmp_CUP_ConciliacionCont_Caratula esperado
-  LEFT JOIN ##tmp_CUP_ConciliacionCont_Caratula calc ON calc.Orden = 5
+    #tmp_CUP_ConciliacionCont_Caratula esperado
+  LEFT JOIN #tmp_CUP_ConciliacionCont_Caratula calc ON calc.Orden = 5
   WHERE 
     esperado.Orden = 4 
 
-  
   -- Regresa La Caratula Final
   SELECT 
     Orden,
@@ -290,7 +288,7 @@ AS BEGIN
     Contabilidad = CAST(Contabilidad AS FLOAT),
     Variacion = CAST(Variacion AS FLOAT)
   FROM 
-    ##tmp_CUP_ConciliacionCont_Caratula  
+    #tmp_CUP_ConciliacionCont_Caratula  
   ORDER BY
     Orden,
     Concepto
