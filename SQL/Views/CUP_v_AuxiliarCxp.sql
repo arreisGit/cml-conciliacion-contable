@@ -50,7 +50,8 @@ SELECT
   AplicaClave = at.Clave,
   OrigenModulo = ISNULL(p.OrigenTipo,''),
   OrigenMov = ISNULL(p.Origen,''),
-  OrigenMovID = ISNULL(p.OrigenID,'')
+  OrigenMovID = ISNULL(p.OrigenID,''),
+  IVAFiscal =  ISNULL(doc.IvaFiscal,0)
 FROM
   Auxiliar a 
 JOIN Rama r ON r.Rama = a.Rama
@@ -60,7 +61,10 @@ JOIN Movtipo t ON t.Modulo = a.Modulo
 LEFT JOIN MovTipo at ON at.Modulo = a.Modulo
                     AnD at.Mov = a.Aplica
 LEFT JOIN Cxp p ON 'CXP' = a.Modulo
-                AND p.ID = a.ModuloID      
+                AND p.ID = a.ModuloID  
+-- Documento
+JOIN Cxp doc ON doc.Mov = a.Aplica
+            AND doc.MovID = a.AplicaID                   
 -- Factor Canceclacion
 CROSS APPLY(SELECT
               Factor  = CASE ISNULL(a.EsCancelacion,0) 
@@ -108,13 +112,17 @@ SELECT
   AplicaClave = at.Clave,
   OrigenModulo =  '',
   OrigenMov = '',
-  OrigenMovID = ''
+  OrigenMovID = '',
+  IVAFiscal  = ISNULL(doc.IvaFiscal,0)
 FROM 
   Cxp p
 JOIN Prov ON prov.Proveedor = p.Proveedor
 JOIN CxpD d ON d.Id = p.ID
 JOIN movtipo t ON t.Modulo = 'CXP'
               AND t.Mov  = p.Mov 
+-- Documento
+LEFT JOIN Cxp doc ON doc.Mov = d.Aplica
+            AND doc.MovID = d.AplicaID    
 LEFT JOIN movtipo at ON at.Modulo = 'CXP'
                       AND at.Mov = d.Aplica
 -- Cargos Abonos ( para mantener el formato del auxiliar )
