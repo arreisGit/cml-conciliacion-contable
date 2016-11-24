@@ -53,7 +53,6 @@ VALUES
   ( 1, 'CXP', 'Reevaluacion Credito', 'CXP',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
    /* IVA Por Acreeditar */
   ( 2, 'CXP', 'Anticipo',             'CXP',  'Anticipo',             -1, 0, 0, NULL,  NULL),
-  ( 2, 'CXP', 'Aplicacion',           'CXP',  'Aplicacion',            1, 1, 0, NULL,  NULL),
   ( 2, 'CXP', 'Cargo Proveedor' ,     'CXP',  'Cargo Proveedor',       1, 0, 0, NULL,  NULL),
   ( 2, 'CXP', 'Credito Proveedor',    'CXP',  'Credito Proveedor',    -1, 0, 1, NULL,  NULL),
   ( 2, 'CXP', 'Credito Proveedor',    'COMS', 'Devolucion Compra',    -1, 0, 0, NULL,  NULL),

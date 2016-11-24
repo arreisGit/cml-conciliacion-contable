@@ -13,16 +13,16 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-13
---
--- Description: Obtiene los auxiliares de
--- Cxc o Cxp con la suficiente informacion
--- para poder verificar el saldo de la cartera
--- durante la conciliacion contaable
---
--- Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 3, 2016, 10
+/* =============================================
+ Created by:    Enrique Sierra Gtez
+ Creation Date: 2016-10-13
+
+ Description: Obtiene los auxiliares de
+ Cxc o Cxp con la suficiente informacion
+ para poder verificar el saldo de la cartera
+ durante la conciliacion contaable
+
+ Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 3, 2016, 10 */
 -- =============================================
 
 
@@ -86,17 +86,17 @@ AS BEGIN
       Empleado,
       Rama,
       AuxID,
+      Sucursal,
+      Cuenta,
+      Mov,
+      MovID,
+      Modulo,
+      ModuloID,
+      Moneda,
+      TipoCambio,
       Ejercicio,
       Periodo,
       Fecha,
-      Sucursal,
-      Cuenta,
-      Modulo,
-      ModuloID,
-      Mov,
-      MovID,
-      Moneda,
-      TipoCambio,
       Cargo,
       Abono,
       Neto,
@@ -105,9 +105,9 @@ AS BEGIN
       NetoMN,
       FluctuacionMN,
       TotalMN,
+      EsCancelacion,
       Aplica,
       AplicaID,
-      EsCancelacion,
       OrigenModulo,
       OrigenMov,
       OrigenMovID

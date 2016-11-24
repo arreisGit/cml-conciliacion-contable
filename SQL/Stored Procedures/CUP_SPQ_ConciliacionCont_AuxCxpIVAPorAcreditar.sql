@@ -12,14 +12,14 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-11-17
---
--- Description: Regresa el auxiliar del IVA Por Acreditar
---
--- Example: EXEC CUP_SPQ_ConciliacionCont_AuxCxpIVAPorAcreditar 63527, 2, 2016, 10
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-11-17
+
+  Description: Regresa el auxiliar del IVA Por Acreditar
+
+  Example: EXEC CUP_SPQ_ConciliacionCont_AuxCxpIVAPorAcreditar 63527, 2, 2016, 10
+============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxCxpIVAPorAcreditar
@@ -31,70 +31,65 @@ AS BEGIN
 
   SET NOCOUNT ON;
 
+
   SELECT
     Empleado = @Empleado,
-    Rama = 'CXP',
-    AuxID  = aux.ID,
+    aux.Rama,
+    aux.AuxID,
+    aux.Sucursal,
+    aux.Cuenta,
+    aux.Mov,
+    aux.MovId,
+    aux.Modulo,
+    aux.ModuloID,
+    aux.Moneda,
+    aux.TipoCambio,
     aux.Ejercicio,
     aux.Periodo,
     aux.Fecha,
-    aux.Sucursal,
-    aux.Cuenta,
-    aux.Modulo,
-    aux.ModuloID,
-    aux.Mov,
-    aux.MovID,
-    aux.Moneda,
-    aux.TipoCambio,
-    Cargo = ISNULL(aux.Cargo,0),
-    Abono = ISNULL(aux.Abono,0),
-    Neto = calc.Neto,
-    CargoMN = ROUND(ISNULL(aux.Cargo,0) * aux.TipoCambio * aux.IVAFiscal,4,1),
-    AbonoMN = ROUND(ISNULL(aux.Abono,0) * aux.TipoCambio * aux.IVAFiscal,4,1),
-    NetoMN =  ROUND(ISNULL(calc.Neto,0) * aux.TipoCambio * aux.IVAFiscal,4,1),
-    FluctuacionMN  = 0 ,-- ,ROUND(calc.FluctuacionMN * -1 * ISNULL(fctorCanc.Factor,1),4,1),
+    Cargo =  ROUND( aux.Cargo  * aux.IVAFiscal, 4, 1),
+    Abono = ROUND( aux.Abono * aux.IVAFiscal, 4, 1),
+    Neto = ROUND( aux.Neto * aux.IVAFiscal, 4, 1),
+    CargoMN = ROUND( aux.CargoMN * aux.IVAFiscal, 4, 1),
+    AbonoMN = ROUND( aux.AbonoMN * aux.IVAFiscal, 4, 1),
+    NetoMN = ROUND( aux.NetoMN * aux.IVAFiscal, 4, 1),
+    FluctuacionMN = ROUND( calc.FluctuacionMN * aux.IVAFiscal ,4 ,1 ),
     TotalMN = ROUND(  
-                    (calc.Neto * aux.TipoCambio * aux.IVAFiscal)
-                  + 0 --(calc.FluctuacionMN * -1 * ISNULL(fctorCanc.Factor,1))
+                    ( aux.NetoMN + calc.FluctuacionMN )
+                    * aux.IVAFiscal
               ,4,1),
+    aux.EsCancelacion,
     aux.Aplica,
     aux.AplicaID,
-    aux.EsCancelacion,
-    OrigenModulo = ISNULL(p.OrigenTipo,''),
-    OrigenMov = ISNULL(p.Origen,''),
-    OrigenMovID = ISNULL(p.OrigenID,'')
+    aux.OrigenModulo,
+    aux.OrigenMov,
+    aux.OrigenMovID
   FROM
-    CUP_v_CxAuxiliarImpuestos aux
-    -- Excepciones Cuentas
-  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
-                                                AND ex.TipoExcepcion = 1
-                                                AND ex.Valor = aux.cuenta
-  JOIN Cxp p ON 'CXP' = aux.Modulo
-            AND p.ID = aux.ModuloID
-  JOIN Prov ON prov.Proveedor = Aux.Cuenta
-  -- Factor Canceclacion
-  CROSS APPLY(SELECT
-                Factor  = CASE ISNULL(aux.EsCancelacion,0) 
-                            WHEN 1 THEN
-                              -1
-                            ELSE 
-                              1
-                          END) fctorCanc 
-  -- Fluctuacion Cambiaria
+    CUP_v_AuxiliarCxp aux
+  LEFT JOIN CUP_ConciliacionCont_Excepciones ex ON ex.TipoConciliacion = @Tipo 
+                                               AND ex.TipoExcepcion = 1 
+                                               AND ex.Valor = LTRIM(RTRIM(aux.Cuenta))
   LEFT JOIN CUP_v_CxDiferenciasCambiarias fc ON fc.Modulo = aux.Modulo
-                                            AND fc.ModuloID = aux.ModuloId
-                                            AND fc.Documento = aux.Aplica
-                                            AND fc.DocumentoID = aux.AplicaID
+                                          AND fc.ModuloID = aux.ModuloId
+                                          AND fc.Documento = aux.Aplica
+                                          AND fc.DocumentoID = aux.AplicaID
+  -- Factores
+  CROSS APPLY(SELECT
+                FactorCanc  = CASE ISNULL(aux.EsCancelacion,0) 
+                                WHEN 1 THEN
+                                  -1
+                                ELSE 
+                                  1
+                              END) f 
   -- Campos Calculados
-  CROSS APPLY ( SELECT   
-                  Neto = (ISNULL(aux.Cargo,0) - ISNULL( aux.Abono,0)) * aux.IVAFiscal,
-                  FluctuacionMN  = ISNULL(fc.Diferencia_Cambiaria_MN,0)
-              ) Calc
-   
-  WHERE
-    aux.Ejercicio = @Ejercicio 
+CROSS APPLY ( SELECT
+                FluctuacionMN =  ROUND( -ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(f.FactorCanc,1),4,1)
+            ) Calc
+  WHERE 
+    aux.Ejercicio = @Ejercicio
   AND aux.Periodo = @Periodo
-  -- Filtro Excepciones cuenta
-  AND eX.ID IS NULL
+  AND ex.ID IS NULL
+  AND aux.Rama <> 'REV'
+  AND aux.MovClave NOT IN ('CXP.ANC','CXP.RE')
 
 END

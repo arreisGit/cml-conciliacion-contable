@@ -105,8 +105,20 @@ AS BEGIN
   -- Factor Moneda Documento
   CROSS APPLY( SELECT   
                   FactorTC =   m.TipoCambio / m.ProveedorTipoCambio,
-                  ImporteTotal =  ROUND(  ( ISNULL(m.Importe,0) + ISNULL(m.Impuestos,0) - ISNULL(m.Retencion,0) )
-                                        * (m.TipoCambio / m.ProveedorTipoCambio), 4, 1)
+                  ImporteTotal =  ROUND( 
+                                         (CASE @Tipo
+                                            WHEN 1 THEN  -- Saldo Proveedores 
+                                              ISNULL(m.Importe,0) 
+                                            + ISNULL(m.Impuestos,0)
+                                            - ISNULL(m.Retencion,0)
+                                            WHEN 2 THEN -- IVA X Acreeditar
+                                                ISNULL(m.Impuestos,0)
+                                              - ISNULL(m.Retencion,0)
+                                            ELSE 
+                                              0
+                                          END)
+                                          * (m.TipoCambio / m.ProveedorTipoCambio)
+                                       , 4, 1)
               ) conversion_doc 
   -- Fluctuacion Cambiaria
   CROSS APPLY(SELECT
