@@ -130,7 +130,27 @@ AS BEGIN
     )
     EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados_AuxCxp @Ejercicio, @Periodo
   END
-  -- SALDOS Cxc
+
+  -- IVA Por Acreeditar
+  IF @Tipo = 2
+  BEGIN
+    INSERT INTO @SaldosCx
+    (
+      Ejercicio,
+      Periodo,
+      ImporteInicialDlls,
+      ImporteInicialConversionMN,
+      ImporteInicialMN,
+      ImporteInicialTotalMN,
+      ImporteFinalDlls,
+      ImporteFinalConversionMN,
+      ImporteFinalMN,
+      ImporteFinalTotalMN
+    )
+    EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados_IVAPorAcreditar @Ejercicio, @Periodo
+  END
+
+  -- Saldo Clientes
   ELSE IF @Tipo = 3 
   BEGIN
 

@@ -31,7 +31,6 @@ AS BEGIN
 
   SET NOCOUNT ON;
 
-
   SELECT
     Empleado = @Empleado,
     aux.Rama,
@@ -50,14 +49,27 @@ AS BEGIN
     Cargo =  ROUND( aux.Cargo  * aux.IVAFiscal, 4, 1),
     Abono = ROUND( aux.Abono * aux.IVAFiscal, 4, 1),
     Neto = ROUND( aux.Neto * aux.IVAFiscal, 4, 1),
-    CargoMN = ROUND( aux.CargoMN * aux.IVAFiscal, 4, 1),
-    AbonoMN = ROUND( aux.AbonoMN * aux.IVAFiscal, 4, 1),
-    NetoMN = ROUND( aux.NetoMN * aux.IVAFiscal, 4, 1),
-    FluctuacionMN = ROUND( calc.FluctuacionMN * aux.IVAFiscal ,4 ,1 ),
-    TotalMN = ROUND(  
-                    ( aux.NetoMN + calc.FluctuacionMN )
-                    * aux.IVAFiscal
-              ,4,1),
+    CargoMN =  ROUND(
+                      aux.Cargo
+                      * aux.IVAFiscal 
+                      * ISNULL( movEnOrigen.TipoCambio, doc.ProveedorTipoCambio )
+                    , 4, 1),
+    AbonoMN = ROUND( 
+                       aux.Abono 
+                     * aux.IVAFiscal
+                     * ISNULL( movEnOrigen.TipoCambio, doc.ProveedorTipoCambio )
+                   , 4, 1),
+    NetoMN = ROUND( 
+                     aux.Neto
+                   * aux.IVAFiscal
+                   * ISNULL( movEnOrigen.TipoCambio, doc.ProveedorTipoCambio )
+                  , 4, 1),
+    FluctuacionMN = 0,
+    TotalMN = ROUND( 
+                     aux.Neto
+                   * aux.IVAFiscal
+                   * ISNULL( movEnOrigen.TipoCambio, doc.ProveedorTipoCambio )
+                  , 4, 1),
     aux.EsCancelacion,
     aux.Aplica,
     aux.AplicaID,
@@ -69,22 +81,39 @@ AS BEGIN
   LEFT JOIN CUP_ConciliacionCont_Excepciones ex ON ex.TipoConciliacion = @Tipo 
                                                AND ex.TipoExcepcion = 1 
                                                AND ex.Valor = LTRIM(RTRIM(aux.Cuenta))
-  LEFT JOIN CUP_v_CxDiferenciasCambiarias fc ON fc.Modulo = aux.Modulo
-                                          AND fc.ModuloID = aux.ModuloId
-                                          AND fc.Documento = aux.Aplica
-                                          AND fc.DocumentoID = aux.AplicaID
-  -- Factores
-  CROSS APPLY(SELECT
-                FactorCanc  = CASE ISNULL(aux.EsCancelacion,0) 
-                                WHEN 1 THEN
-                                  -1
-                                ELSE 
-                                  1
-                              END) f 
-  -- Campos Calculados
-CROSS APPLY ( SELECT
-                FluctuacionMN =  ROUND( -ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(f.FactorCanc,1),4,1)
-            ) Calc
+  LEFT JOIN Cxp doc ON doc.Mov = aux.Aplica
+                   AND doc.MovId = aux.AplicaID
+  -- MovFlujo Origen
+  OUTER APPLY(
+                SELECT TOP 1
+                  mf.OModulo,
+                  mf.OID
+                FROM 
+                  MovFlujo mf 
+                WHERE 
+                  mf.DModulo = 'CXP'
+                AND mf.DID = doc.ID
+                AND mf.OModulo = doc.OrigenTipo
+                AND mf.OMov = doc.Origen
+                AND mf.OMovID = doc.OrigenID
+              ) mfOrigen
+  -- Datos del doc en Modulo Origen
+  OUTER APPLY ( SELECT TOP 1
+                  coms.TipoCambio
+                FROM 
+                  Compra coms
+                WHERE 
+                 'COMS' =  mfOrigen.OModulo 
+                AND coms.ID = mfOrigen.OID
+                UNION
+                SELECT TOP 1
+                  gas.TipoCambio
+                FROM 
+                  Gasto gas
+                WHERE 
+                 'GAS' =  mfOrigen.OModulo 
+                AND gas.ID = mfOrigen.OID
+              ) movEnOrigen
   WHERE 
     aux.Ejercicio = @Ejercicio
   AND aux.Periodo = @Periodo
