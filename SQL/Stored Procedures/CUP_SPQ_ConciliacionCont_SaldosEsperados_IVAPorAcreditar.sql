@@ -74,7 +74,7 @@ AS BEGIN
   FROM 
     CUP_v_AuxiliarCxp aux
   -- Excepciones Cuentas
-  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = 1 -- Saldo Proveedores
+  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = 2 -- IVA Por Acreditar
                                                 AND ex.TipoExcepcion = 1
                                                 AND ex.Valor = aux.cuenta
   WHERE 
