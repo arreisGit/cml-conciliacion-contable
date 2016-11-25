@@ -23,10 +23,12 @@ GO
 -- Basicamente debe regresar algo  como lo siguiente: 
 --
 -- _______Concepto__________| _ImporteDlls_| _ConversionMN_|_ImporteMn_|_TotalMN_|_Contabilidad_|_Variacion_
--- Saldo Inicial            |
+-- Saldo Inicial Esperado   |
 -- Movs                     |
+-- Total del mes            |
+-- Pólizas Manuales         |
 -- Saldo Final Calculado    |
--- Saldo Final              |
+-- Saldo Final Esperado     |
 -- Variacion                |
 --
 -- Example: EXEC CUP_SPQ_ConciliacionCont_Caratula 63527, 3 , 2016, 10
@@ -239,7 +241,7 @@ AS BEGIN
  )
  SELECT 
     Orden =  4,
-    Mov = 'Polizas Manuales',
+    Mov = 'Pólizas manuales',
     ImporteDlls = 0,
     ImporteConversionMN = 0,
     ImporteMN = 0,
