@@ -7,7 +7,7 @@ INSERT INTO
   Cuenta
 )
 VALUES
-  /* Saldo Proveedores */
+  /* Saldo proveedores */
    ( 1, '211-100-000-0000') -- Proveedores Nacionales	
   ,( 1, '211-200-000-0000') -- Proveedores de Importacion	
   ,( 1, '211-500-000-0000') -- Proveedores Interempresas( 1, No Usar)	
@@ -19,9 +19,9 @@ VALUES
   ,( 1, '211-600-006-0000') -- Grupo Cuprum SA de CV   	
   ,( 1, '211-600-009-0000') -- Cuprum Fab SA de CV	
   ,( 1, '211-400-001-0000') -- Proveedores Agentes Aduanales
-  /* Iva Por Acreditar */
+  /* Iva por acreditar */
   ,( 2, '119-210-000-0000') -- IVA 16% Por Acreditar
-  /* Saldo Clientes */
+  /* Saldo clientes */
   ,( 3, '113-100-000-0000') -- Clientes GDL
   ,( 3, '113-200-000-0000') -- Clientes MEX
   ,( 3, '113-300-000-0000') -- Clientes MTY
@@ -48,6 +48,8 @@ VALUES
   ,( 3, '213-600-000-0000') -- Anticipo Clientes TORR
   ,( 3, '213-700-000-0000') -- Anticipo Clientes QRO
   ,( 3, '213-701-000-0000') -- Anticipo Clientes CD.Juarez
+  /* IVA por trasladar */
+  ,( 4, '217-250-000-0000') -- IVA Tasa 16% Trasladado (Provisión) 
 
 SELECT 
   ID,

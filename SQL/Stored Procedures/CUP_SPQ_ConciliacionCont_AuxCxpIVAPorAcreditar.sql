@@ -119,6 +119,6 @@ AS BEGIN
   AND aux.Periodo = @Periodo
   AND ex.ID IS NULL
   AND aux.Rama <> 'REV'
-  AND aux.MovClave NOT IN ('CXP.ANC','CXP.RE')
+  AND aux.MovClave NOT IN ('CXP.RE')
 
 END

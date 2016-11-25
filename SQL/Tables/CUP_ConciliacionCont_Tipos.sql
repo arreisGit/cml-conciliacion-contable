@@ -19,7 +19,8 @@ GO
 CREATE TABLE dbo.CUP_ConciliacionCont_Tipos
 (
   ID INT PRIMARY KEY NOT NULL IDENTITY(1,1),
-  Descripcion VARCHAR(100) NOT NULL,
+  Descripcion VARCHAR(100) NOT NULL 
+              CONSTRAINT [AK_CUP_ConcilacionCont_Tipos_Descripcion] UNIQUE,
   Empleado INT NOT NULL,
   FechaAlta DATETIME NOT NULL
             CONSTRAINT [DF_CUP_ConciliacionCont_Tipos_FechaAlta] DEFAULT GETDATE() 

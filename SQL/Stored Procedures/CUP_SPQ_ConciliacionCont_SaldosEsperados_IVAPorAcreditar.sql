@@ -79,7 +79,7 @@ AS BEGIN
                                                 AND ex.Valor = aux.cuenta
   WHERE 
     aux.Rama <> 'REV'
-  AND aux.MovClave NOT IN ('CXP.ANC','CXP.RE')
+  AND aux.MovClave NOT IN ('CXP.RE')
   AND (
           aux.Ejercicio < @Ejercicio
       OR (

@@ -104,7 +104,36 @@ VALUES
   ( 3, 'CXC', 'Saldos Cte',           'CXC',  'Saldos Cte',           -1, 0, 1, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion',         'CXC',  'Reevaluacion',          1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion Credito', 'CXC',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',   1, 0, 0, NULL,  NULL)
+  ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',   1, 0, 0, NULL,  NULL),
+  /* IVA por trasladar */
+  ( 4, 'CXC', 'Ajuste',               'CXC',  'Ajuste',                -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Ajuste Redondeo',      'CXC',  'Ajuste Redondeo',       -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Cobro' ,               'CXC',  'Cobro',                -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Cobro Anticipo',       'CXC',  'Cobro Anticipo',       -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Conversion Cargo',     'CXC',  'Conversion Cargo',     -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Conversion Credito',   'CXC',  'Conversion Credito',    1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Cheque Devuelto',      'CXC',  'Cheque Devuelto',       1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Devolucion',           'CXC',  'Devolucion',           -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Devol Anticipo CFD',   'CXC',  'Devol Anticipo CFD',    1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Devol Anticipo',       'CXC',  'Devol Anticipo',        1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Fact Ant Pitex CFD',   'CXC',  'Fact Ant Pitex CFD',   -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Factura Export CFD',   'VTAS', 'Factura Export CFD',    1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Factura Vta CFD',      'VTAS', 'Factura Vta CFD',       1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Cargo CFD',       'CXC',  'Nota Cargo CFD',        1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Cargo Serv CFD',  'CXC',  'Nota Cargo Serv CFD',   1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito',         'CXC',  'Nota Credito',         -1, 0, 1, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'CXC',  'Nota Credito CFD',     -1, 0, 1, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonif Act Fijo CFD',   -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonif Pitex CFD',      -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonif Vta Export CFD', -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Bonificacion Vta CFD', -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Expor CFD', -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Pitex CFD', -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CFD',     'VTAS', 'Devolucion Vta CFD',   -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Nota Credito CS CFD',  'CXC',  'Nota Credito CS CFD',  -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Saldo Fact Torr',      'CXC',  'Saldo Fact Torr',      -1, 0, 1, NULL,  NULL),
+  ( 4, 'CXC', 'Saldos Cte',           'CXC',  'Saldos Cte',           -1, 0, 1, NULL,  NULL),
+  ( 4, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',   1, 0, 0, NULL,  NULL)
 
 
 SELECT
