@@ -155,6 +155,13 @@ AS BEGIN
     SELECT 
       Mov = AuxMov
     FROM 
+      @ImportesAuxCont
+    WHERE 
+      ISNULL(AuxMov,'')  <> ''
+    UNION
+    SELECT 
+      Mov = AuxMov
+    FROM 
       CUP_ConciliacionCont_Tipo_OrigenContable
     WHERE 
       Tipo = @Tipo
@@ -190,7 +197,7 @@ AS BEGIN
   LEFT JOIN @ImportesAuxCx aux ON LTRIM(RTRIM(aux.Mov)) = LTRIM(RTRIM(dm.Mov))
   LEFT JOIN @ImportesAuxCont cont ON LTRIM(RTRIM(cont.AuxMov)) = LTRIM(RTRIM(dm.Mov))
 
-  -- Total Mes 
+  -- Total de las transacciones del mes. 
   INSERT INTO 
     #tmp_CUP_ConciliacionCont_Caratula
   (
@@ -217,6 +224,34 @@ AS BEGIN
   WHERE 
     Orden IN (2)
 
+  -- Polizas Manuales del mes.
+  INSERT INTO 
+  #tmp_CUP_ConciliacionCont_Caratula
+ (
+    Orden,
+    Concepto,
+    ImporteDlls,
+    ImporteConversionMN,
+    ImporteMN,
+    TotalMN,
+    Contabilidad,
+    Variacion
+ )
+ SELECT 
+    Orden =  4,
+    Mov = 'Polizas Manuales',
+    ImporteDlls = 0,
+    ImporteConversionMN = 0,
+    ImporteMN = 0,
+    TotalMN = 0,
+    Contabilidad = SUM( ISNULL(cont.Neto,0) ),
+    Variacion  = SUM(- ISNULL(cont.Neto,0) )
+  FROM 
+     @ImportesAuxCont cont
+  WHERE 
+      LTRIM(RTRIM(ISNULL(cont.AuxModulo,''))) = ''
+  AND LTRIM(RTRIM(cont.AuxMov)) = ''
+
   -- Saldo Final Calculado 
   INSERT INTO 
     #tmp_CUP_ConciliacionCont_Caratula
@@ -231,7 +266,7 @@ AS BEGIN
     Variacion
   )
   SELECT 
-    Orden =  5,
+    Orden =  6,
     Concepto = 'Saldo Final Calculado',
     ImporteDlls = SUM(ISNULL(ImporteDlls,0)),
     ImporteConversionMN = SUM(ISNULL(ImporteConversionMN,0)),
@@ -242,7 +277,7 @@ AS BEGIN
   FROM 
     #tmp_CUP_ConciliacionCont_Caratula
   WHERE 
-    Orden IN (1,3) -- Saldos Iniciales + Total Mes
+    Orden IN (1,3,4) -- Saldos Iniciales + Total Mes + Polizas Manuales
  
   -- Variacion  
   INSERT INTO 
@@ -258,7 +293,7 @@ AS BEGIN
     Variacion
   )
   SELECT 
-    Orden =  6,
+    Orden =  7,
     'Variacion',
     ImporteDlls = ISNULL(esperado.ImporteDlls,0) 
                 - ISNULL(calc.ImporteDlls,0),
@@ -273,9 +308,9 @@ AS BEGIN
     Variacion  = NULL
   FROM 
     #tmp_CUP_ConciliacionCont_Caratula esperado
-  LEFT JOIN #tmp_CUP_ConciliacionCont_Caratula calc ON calc.Orden = 5
+  LEFT JOIN #tmp_CUP_ConciliacionCont_Caratula calc ON calc.Orden = 6
   WHERE 
-    esperado.Orden = 4 
+    esperado.Orden = 5
 
   -- Regresa La Caratula Final
   SELECT 

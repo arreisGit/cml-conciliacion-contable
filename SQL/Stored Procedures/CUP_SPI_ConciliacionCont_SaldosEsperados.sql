@@ -381,7 +381,7 @@ AS BEGIN
                                AND cont.Periodo = cx.Periodo 
   UNION
   SELECT 
-    Orden = 4,
+    Orden = 5,
     Concepto = 'Saldo Final Intelisis',
     ImporteDlls = ISNULL(cx.ImporteFinalDlls,0),
     ImporteConversionMN = ISNULL(cx.ImporteFinalConversionMN,0),
