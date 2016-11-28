@@ -155,11 +155,14 @@ AS BEGIN
       @ImportesAuxCx
     UNION
     SELECT 
-      Mov = AuxMov
+      Mov = auxCont.AuxMov
     FROM 
-      @ImportesAuxCont
+      @ImportesAuxCont auxCont
+    JOIN CUP_ConciliacionCont_Tipo_OrigenContable origenCont ON origenCont.Modulo = auxCont.AuxModulo
+                                                            AND origenCont.Mov = auxCont.AuxMov
     WHERE 
-      ISNULL(AuxMov,'')  <> ''
+      ISNULL(auxCont.AuxMov,'')  <> ''
+    AND origenCont.Mov IS NULL
     UNION
     SELECT 
       Mov = AuxMov
@@ -241,7 +244,7 @@ AS BEGIN
  )
  SELECT 
     Orden =  4,
-    Mov = 'Pólizas manuales',
+    Mov = 'Póliza manual',
     ImporteDlls = 0,
     ImporteConversionMN = 0,
     ImporteMN = 0,
