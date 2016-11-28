@@ -105,7 +105,7 @@ VALUES
   ( 3, 'CXC', 'Reevaluacion',         'CXC',  'Reevaluacion',          1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion Credito', 'CXC',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',   1, 0, 0, NULL,  NULL),
-  /* IVA por trasladar */
+  /* IVA Trasladado */
   ( 4, 'CXC', 'Ajuste',               'CXC',  'Ajuste',                -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Ajuste Redondeo',      'CXC',  'Ajuste Redondeo',       -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Cobro' ,               'CXC',  'Cobro',                -1, 0, 0, NULL,  NULL),

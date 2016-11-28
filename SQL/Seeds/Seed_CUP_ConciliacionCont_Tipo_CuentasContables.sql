@@ -48,7 +48,7 @@ VALUES
   ,( 3, '213-600-000-0000') -- Anticipo Clientes TORR
   ,( 3, '213-700-000-0000') -- Anticipo Clientes QRO
   ,( 3, '213-701-000-0000') -- Anticipo Clientes CD.Juarez
-  /* IVA por trasladar */
+  /* IVA Trasladado */
   ,( 4, '217-250-000-0000') -- IVA Tasa 16% Trasladado (Provisión) 
 
 SELECT 
