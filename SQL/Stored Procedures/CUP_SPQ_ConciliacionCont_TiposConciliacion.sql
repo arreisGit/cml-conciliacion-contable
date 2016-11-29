@@ -35,4 +35,6 @@ AS BEGIN
     Descripcion
   FROM 
     CUP_ConciliacionCont_Tipos
+  ORDER BY
+    ID ASC
 END
