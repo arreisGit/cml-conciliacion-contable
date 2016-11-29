@@ -37,11 +37,13 @@ AS BEGIN
     modulo.ID,
     modulo.Mov,
     modulo.MovId,
+    modulo.FechaEmision,
     modulo.Estatus,
     modulo.PolizaID,
     ConciliacionPolizaID    = cont.Id,
     ConciliacionPolizaMov   = cont.Mov,
     ConciliacionPolizaMovID = cont.Movid,
+    FluctuacionMN =  CAST(ISNULL(modulo.FluctuacionCambiariaMN,0) AS FLOAT),
     TotalModuloMN = CAST(ISNULL(modulo.ImporteTotalMN,0) AS FLOAT),
     NetoCont =  CAST(ISNULL(cont.Neto,0) AS FLOAT),
     Variacion = CAST(ISNULL(modulo.ImporteTotalMN,0)  - ISNULL(cont.Neto,0) AS FLOAT)
