@@ -135,16 +135,16 @@ AS BEGIN
     Neto
   )
   SELECT 
-    AuxModulo = ISNULL(AuxiliarModulo,''),
-    AuxMov = ISNULL(AuxiliarMov,''),
+    AuxModulo = ISNULL(NULLIF(AuxiliarModulo,''),ISNULL(OrigenModulo,'')),
+    AuxMov = ISNULL(NULLIF(AuxiliarMov,''),ISNULL(OrigenMov,'')),
     Neto = SUM(ISNULL(Neto,0))
   FROM 
     CUP_ConciliacionCont_AuxCont
   WHERE 
     Empleado = @Empleado
   GROUP BY 
-    ISNULL(AuxiliarModulo,''),
-    ISNULL(AuxiliarMov,'')
+    ISNULL(NULLIF(AuxiliarModulo,''),ISNULL(OrigenModulo,'')),
+    ISNULL(NULLIF(AuxiliarMov,''),ISNULL(OrigenMov,''))
 
 
   ;WITH AllMovs AS 
@@ -153,18 +153,23 @@ AS BEGIN
       Mov 
     FROM 
       @ImportesAuxCx
+
     UNION
-    SELECT 
+
+    SELECT DISTINCT
       Mov = auxCont.AuxMov
     FROM 
       @ImportesAuxCont auxCont
     JOIN CUP_ConciliacionCont_Tipo_OrigenContable origenCont ON origenCont.Modulo = auxCont.AuxModulo
                                                             AND origenCont.Mov = auxCont.AuxMov
+                                                            AND origenCont.Tipo = @Tipo
     WHERE 
       ISNULL(auxCont.AuxMov,'')  <> ''
     AND origenCont.Mov IS NULL
+
     UNION
-    SELECT 
+
+    SELECT DISTINCT
       Mov = AuxMov
     FROM 
       CUP_ConciliacionCont_Tipo_OrigenContable

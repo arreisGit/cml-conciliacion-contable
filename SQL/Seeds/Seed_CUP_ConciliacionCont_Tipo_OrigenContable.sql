@@ -53,7 +53,9 @@ VALUES
   ( 1, 'CXP', 'Reevaluacion Credito', 'CXP',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
    /* IVA Por Acreeditar */
   ( 2, 'CXP', 'Anticipo',             'CXP',  'Anticipo',             -1, 0, 0, NULL,  NULL),
+  ( 2, 'CXP', 'Aplicacion',           'CXP',  'Aplicacion',            1, 1, 0, NULL,  NULL),
   ( 2, 'CXP', 'Cargo Proveedor' ,     'CXP',  'Cargo Proveedor',       1, 0, 0, NULL,  NULL),
+  ( 2, 'CXP', 'Correccion Rebate',    'CXP',  'Correccion Rebate',     1, 0, 0, NULL,  NULL),
   ( 2, 'CXP', 'Credito Proveedor',    'CXP',  'Credito Proveedor',    -1, 0, 1, NULL,  NULL),
   ( 2, 'CXP', 'Credito Proveedor',    'COMS', 'Devolucion Compra',    -1, 0, 0, NULL,  NULL),
   ( 2, 'CXP', 'Credito Proveedor',    'COMS', 'Bonificacion Compra',  -1, 0, 0, NULL,  NULL),
@@ -104,10 +106,10 @@ VALUES
   ( 3, 'CXC', 'Saldos Cte',           'CXC',  'Saldos Cte',           -1, 0, 1, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion',         'CXC',  'Reevaluacion',          1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Reevaluacion Credito', 'CXC',  'Reevaluacion Credito',  1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',   1, 0, 0, NULL,  NULL),
+  ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',  1, 0, 0, NULL,  NULL),
   /* IVA Trasladado */
-  ( 4, 'CXC', 'Ajuste',               'CXC',  'Ajuste',                -1, 0, 0, NULL,  NULL),
-  ( 4, 'CXC', 'Ajuste Redondeo',      'CXC',  'Ajuste Redondeo',       -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Ajuste',               'CXC',  'Ajuste',               -1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Aplicacion Saldo',     'CXC',  'Aplicacion Saldo',     -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Cobro' ,               'CXC',  'Cobro',                -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Cobro Anticipo',       'CXC',  'Cobro Anticipo',       -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Conversion Cargo',     'CXC',  'Conversion Cargo',     -1, 0, 0, NULL,  NULL),
