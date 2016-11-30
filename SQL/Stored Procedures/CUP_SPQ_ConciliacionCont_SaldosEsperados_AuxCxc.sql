@@ -14,10 +14,10 @@ GO
 
  /*=============================================
    Created by:    Enrique Sierra Gtez
-   Creation Date: 2016-11-18
+   Creation Date: 2016-11-30
 
    Description: Obtiene los Saldos Iniciales y Finales
-   que se usaran para la conciliacion Cotable de Clientes
+   que se usaran para la conciliacion Contable de Clientes
  
    Example: EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados_AuxCxc 2016, 10
  ============================================= */
@@ -100,7 +100,7 @@ AS BEGIN
     SaldoFinal = SUM(ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0))
   FROM
     CUP_v_AuxiliarCxc aux
-  LEFT JOIN CUP_ConciliacionCont_Excepciones ex ON ex.TipoConciliacion = 3 
+  LEFT JOIN CUP_ConciliacionCont_Excepciones ex ON ex.TipoConciliacion = 3 -- Saldo Clientes.
                                                 AND ex.TipoExcepcion = 1 
                                                 AND ex.Valor = LTRIM(RTRIM(aux.Cuenta))
   WHERE
