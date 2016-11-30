@@ -216,8 +216,8 @@ SELECT
   ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = mt.Factor,
   DiferenciaMN = Round((  
-                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
+                           ISNULL(importes_calculo.ImporteMNTCRev,0)
+                         - ISNULL(importes_calculo.ImporteMNTCAplica,0)
                         ) * mt.Factor,4,1)
 FROM
   Venta v 
