@@ -13,18 +13,17 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-20
---
--- Description: Cruza los auxiliares de
--- Modulo y Contabilidad, sobre un Ejercicio/Periodo
--- y con la suficiente informacion para facilitar  
--- la conciliacion.
--- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 63527, 'Ajuste'
---
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-20
+
+  Description: Cruza los auxiliares de
+  Modulo y Contabilidad, sobre un Ejercicio/Periodo
+  y con la suficiente informacion para facilitar  
+  la conciliacion.
+ 
+  Example: EXEC CUP_SPQ_ConciliacionCont_ModuloVsCont 63527, 'Ajuste'
+============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_ModuloVsCont

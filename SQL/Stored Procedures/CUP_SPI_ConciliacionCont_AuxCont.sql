@@ -13,17 +13,17 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-13
---
--- Description: Obtiene los auxiliares de
--- Cont con suficiente informacion para
--- poder hacer el cruce contra los auxiliares
--- CX  en un ejercicio/periodo especifico
--- 
--- Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 63527, 3, 2016, 10
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-13
+
+  Description: Obtiene los auxiliares de
+  Cont con suficiente informacion para
+  poder hacer el cruce contra los auxiliares
+  CX  en un ejercicio/periodo especifico
+ 
+  Example: EXEC CUP_SPI_ConciliacionCont_AuxCont 63527, 3, 2016, 10
+ ============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCont

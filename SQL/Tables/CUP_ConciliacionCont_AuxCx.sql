@@ -5,16 +5,16 @@ IF OBJECT_ID('dbo.CUP_ConciliacionCont_AuxCx', 'U') IS NOT NULL
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-26
---
--- Description: Tabla encargada de contener
--- los auxiliares de Cxc/Cxp para un ejercicio
--- y periodo especifico. Con el fin de poder utilizr
--- la informacion en la conciliacion contable.
---
--- =============================================
+/* =============================================
+ Created by:    Enrique Sierra Gtez
+ Creation Date: 2016-10-26
+
+ Description: Tabla encargada de contener
+ los auxiliares de Cxc/Cxp para un ejercicio
+ y periodo especifico. Con el fin de poder utilizr
+ la informacion en la conciliacion contable.
+
+ ============================================= */
 
 CREATE TABLE dbo.CUP_ConciliacionCont_AuxCx
 (

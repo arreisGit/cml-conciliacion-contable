@@ -22,8 +22,8 @@ GO
  para poder verificar el saldo de la cartera
  durante la conciliacion contaable
 
- Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 3, 2016, 10 */
--- =============================================
+ Example: EXEC CUP_SPI_ConciliacionCont_AuxCx 63527, 3, 2016, 10 
+============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxCx

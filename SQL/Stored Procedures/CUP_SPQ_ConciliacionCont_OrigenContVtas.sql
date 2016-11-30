@@ -12,17 +12,17 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-11-15
---
--- Description: Obtiene los movimientos que componen
--- el auxiliar Cxc desde el modulo de Ventas y con la 
--- suficiente iformacion para poderlos cruzar 
--- "lado a lado" con su póliza  contable.
--- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas 63527, 3, 2016, 10
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-11-15
+
+  Description: Obtiene los movimientos que componen
+  el auxiliar Cxc desde el modulo de Ventas y con la 
+  suficiente iformacion para poderlos cruzar 
+  "lado a lado" con su póliza  contable.
+ 
+  Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas 63527, 3, 2016, 10
+ ============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContVtas

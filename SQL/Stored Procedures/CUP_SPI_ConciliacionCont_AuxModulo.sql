@@ -12,12 +12,12 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-24
---
--- Example: EXEC CUP_SPI_ConciliacionCont_AuxModulo 63527, 1, 2016, 9
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-24
+
+  Example: EXEC CUP_SPI_ConciliacionCont_AuxModulo 63527, 1, 2016, 9
+ ============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_AuxModulo

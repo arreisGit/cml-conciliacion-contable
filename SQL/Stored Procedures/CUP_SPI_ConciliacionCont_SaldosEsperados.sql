@@ -12,15 +12,15 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-27
---
--- Description: Obtiene los Saldos Iniciales y Finales
--- que se usaran para la conciliacion Cotable
--- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados 63527, 3, 2016, 10
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-27
+
+  Description: Obtiene los Saldos Iniciales y Finales
+  que se usaran para la conciliacion Cotable
+ 
+  Example: EXEC CUP_SPQ_ConciliacionCont_SaldosEsperados 63527, 3, 2016, 10
+ ============================================= */
 
 CREATE PROCEDURE dbo.CUP_SPI_ConciliacionCont_SaldosEsperados
   @Empleado   INT,

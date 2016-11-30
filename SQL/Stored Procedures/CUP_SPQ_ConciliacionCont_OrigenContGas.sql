@@ -12,17 +12,17 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-24
---
--- Description: Obtiene los movimientos que componen
--- el auxiliar Cxp desde el modulo de Gastos y con la 
--- suficiente iformacion para poderlos cruzar 
--- "lado a lado" con su póliza  contable.
--- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContGas 63527, 1, 2016, 9
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-24
+
+  Description: Obtiene los movimientos que componen
+  el auxiliar Cxp desde el modulo de Gastos y con la 
+  suficiente iformacion para poderlos cruzar 
+  "lado a lado" con su póliza  contable.
+ 
+  Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContGas 63527, 1, 2016, 9
+ ============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContGas

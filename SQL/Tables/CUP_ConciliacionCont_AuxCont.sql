@@ -5,14 +5,14 @@ IF OBJECT_ID('dbo.CUP_ConciliacionCont_AuxCont', 'U') IS NOT NULL
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-26
---
--- Description: Tabla encargada de contener
--- los auxiliares contables para las conciliaciones 
--- auxiliar - cont.
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-10-26
+
+  Description: Tabla encargada de contener
+  los auxiliares contables para las conciliaciones 
+  auxiliar - cont.
+ ============================================= */
 
 CREATE TABLE dbo.CUP_ConciliacionCont_AuxCont
 (

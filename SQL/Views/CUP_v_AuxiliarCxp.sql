@@ -14,7 +14,7 @@ GO
           WHERE 
             Ejercicio = 2016
           AND Periodo = 10       
--- ============================================*/
+===========================================*/
 
 
 IF EXISTS(SELECT * FROM sysobjects WHERE name='CUP_v_AuxiliarCxp')

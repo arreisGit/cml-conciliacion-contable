@@ -13,16 +13,15 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-11-01
---
--- Description: Devuelve los tipos
--- de conciliacion Contable que estan configurados en el sistema.
--- 
--- Example: EXEC CUP_SPQ_ConciliacionCont_TiposConciliacion
---
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-11-01
+
+  Description: Devuelve los tipos
+  de conciliacion Contable que estan configurados en el sistema.
+ 
+  Example: EXEC CUP_SPQ_ConciliacionCont_TiposConciliacion
+ ============================================= */
 
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_TiposConciliacion

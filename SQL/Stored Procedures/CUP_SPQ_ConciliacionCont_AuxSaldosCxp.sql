@@ -12,14 +12,14 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-11-18
---
--- Description: Obtiene los auxiliares de
--- los Saldos Cxp 
--- Example: EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxp 63527, 3, 2016, 10
--- =============================================
+/* =============================================
+   Created by:    Enrique Sierra Gtez
+   Creation Date: 2016-11-18
+
+   Description: Obtiene los auxiliares de
+   los Saldos Cxp 
+   Example: EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxp 63527, 3, 2016, 10
+ ============================================= */
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxSaldosCxp
   @Empleado INT,

@@ -4,7 +4,7 @@ GO
 
 /*=============================================
  Created by:    Enrique Sierra Gtez
- Creation Date: 2016-11-10r
+ Creation Date: 2016-11-10
 
  Description: Regresa el auxiliar de 
  Saldos Cxc.

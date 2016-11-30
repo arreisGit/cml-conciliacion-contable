@@ -5,14 +5,14 @@ IF OBJECT_ID('dbo.CUP_ConciliacionCont_Excepciones', 'U') IS NOT NULL
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-11-04
---
--- Description: Tabla encargada de contener
--- los excepciones que la herramienta de conciliacion
--- debe tener en cuenta a la hora de preparar la informacion
--- =============================================
+/* =============================================
+  Created by:    Enrique Sierra Gtez
+  Creation Date: 2016-11-04
+
+  Description: Tabla encargada de contener
+  los excepciones que la herramienta de conciliacion
+  debe tener en cuenta a la hora de preparar la informacion
+ ============================================= */
 
 CREATE TABLE dbo.CUP_ConciliacionCont_Excepciones
 (
