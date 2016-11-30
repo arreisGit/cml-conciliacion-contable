@@ -152,6 +152,43 @@ AS BEGIN
       OrigenMovID
     )
     EXEC CUP_SPQ_ConciliacionCont_AuxSaldosCxc @Empleado, @Tipo, @Ejercicio, @Periodo
+  END
 
+  -- IVA Trasladado
+  IF @Tipo = 4 
+  BEGIN
+    INSERT INTO
+      CUP_ConciliacionCont_AuxCx
+    (
+      Empleado,
+      Rama,
+      AuxID,
+      Sucursal,
+      Cuenta,
+      Mov,
+      MovID,
+      Modulo,
+      ModuloID,
+      Moneda,
+      TipoCambio,
+      Ejercicio,
+      Periodo,
+      Fecha,
+      Cargo,
+      Abono,
+      Neto,
+      CargoMN,
+      AbonoMN,
+      NetoMN,
+      FluctuacionMN,
+      TotalMN,
+      EsCancelacion,
+      Aplica,
+      AplicaID,
+      OrigenModulo,
+      OrigenMov,
+      OrigenMovID
+    )
+    EXEC CUP_SPQ_ConciliacionCont_AuxCxcIVATrasladado @Empleado, @Tipo, @Ejercicio, @Periodo
   END
 END
