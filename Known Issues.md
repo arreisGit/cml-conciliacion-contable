@@ -7,6 +7,11 @@ que se estan aplicando contra el de la nota de credito. Lo cual
 presenta un escenario natural donde al parecer se necesita de una
 fluctuacion que al dia de hoy no se esta realizando.
 
+2. Cuandos se corre la herramienta de conciliacion contable, en el 
+mes actual y para el IVA Por Acreditar truena con un error SQL de
+que no puede insertar un valaor nulo a una de las tablas de la 
+conciliacion.
+
 ## En Revision
 1. Hay que asegurarse que en el proceso del mapeo entre auxiliares 
 y conttabilidad regrese el concepto de cualquiese que sea 
