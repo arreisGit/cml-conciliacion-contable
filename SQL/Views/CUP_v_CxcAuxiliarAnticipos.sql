@@ -48,12 +48,16 @@ SELECT
   AplicaID    = aux.ModuloID,
   AplicaMov   = aux.Aplica,
   AplicaMovId = aux.AplicaID,
-  AplicaClave = t.Clave
+  AplicaClave = t.Clave,
+  IVAFiscal = ISNULL(doc.IVAFiscal,0)
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
 JOIN Movtipo t ON t.Modulo =  aux.Modulo
               AND t.Mov    =  aux.Mov
+-- Documento
+LEFT JOIN Cxc doc ON doc.Mov = aux.Aplica
+                 AND doc.MovID = aux.AplicaID   
 -- CALC 
 OUTER APPLY( SELECT 
                 Cargo  = aux.Abono,
@@ -87,7 +91,8 @@ SELECT
   AplicaID = vfa.CxcID,
   AplicaMov =  c.Mov,
   AplicaMovID = c.MovID,
-  AplicaClave = at.Clave
+  AplicaClave = at.Clave,
+  IVAFiscal = ISNULL(c.IVAFiscal,0)
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
@@ -95,6 +100,7 @@ JOIN VentaFacturaAnticipo vfa ON  vfa.ID = aux.ModuloID
 JOIN Venta v ON v.ID = vfa.ID 
 JOIN movtipo t ON t.Modulo = 'VTAS'
               AND t.Mov = v.Mov
+-- Factura Anticipo
 JOIN Cxc c ON c.ID = vfa.CxcID
 JOIN movtipo at ON at.Modulo = 'CXC'
                AND at.Mov = c.Mov
@@ -140,13 +146,15 @@ SELECT
   AplicaID = cfa.CxcID,
   AplicaMov = c.Mov,
   AplicaMovID = c.MovID,
-  AplicaClave = at.CLave
+  AplicaClave = at.CLave,
+  IVAFiscal = ISNULL(c.IVAFiscal,0)
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
 JOIN Movtipo t ON t.Modulo =  aux.Modulo
               AND t.Mov    =  aux.Mov
 JOIN CxcFacturaAnticipo cfa ON  cfa.ID = aux.ModuloID
+-- Factura Anticipo
 JOIN Cxc c ON c.ID = cfa.CxcID
 JOIN Movtipo at ON at.Modulo =  'CXC'
                AND at.Mov    =  c.Mov

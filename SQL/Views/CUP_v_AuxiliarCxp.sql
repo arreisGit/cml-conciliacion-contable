@@ -51,7 +51,7 @@ SELECT
   OrigenModulo = ISNULL(p.OrigenTipo,''),
   OrigenMov = ISNULL(p.Origen,''),
   OrigenMovID = ISNULL(p.OrigenID,''),
-  IVAFiscal =  ISNULL(doc.IvaFiscal,0)
+  IVAFiscal =  ISNULL(doc.IVAFiscal,0)
 FROM
   Auxiliar a 
 JOIN Rama r ON r.Rama = a.Rama

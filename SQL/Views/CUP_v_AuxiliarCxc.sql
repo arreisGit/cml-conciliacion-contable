@@ -50,15 +50,17 @@ SELECT
   AplicaClave = at.Clave,
   OrigenModulo = ISNULL(c.OrigenTipo,''),
   OrigenMov = ISNULL(c.Origen,''),
-  OrigenMovID = ISNULL(c.OrigenID,'')
+  OrigenMovID = ISNULL(c.OrigenID,''),
+  IVAFiscal = ISNULL(doc.IVAFiscal,0)
 FROM 
 	Auxiliar a
 JOIN Rama r on r.Rama = a.Rama
 JOIN Movtipo t ON t.Modulo = a.Modulo
               AND t.Mov  = a.Mov  
 LEFT JOIN Cxc c ON c.ID = a.ModuloID
-LEFT JOIN cxc aplica ON aplica.Mov = a.Aplica
-                    AND aplica.Movid = a.AplicaID
+-- Documento
+LEFT JOIN Cxc doc ON doc.Mov = a.Aplica
+                 AND doc.Movid = a.AplicaID
 LEFT JOIN Movtipo at ON at.Modulo = 'CXC'
                     AND at.Mov = a.Aplica
 -- Campos Calculados
@@ -141,7 +143,8 @@ SELECT
   a.AplicaClave,
   OrigenModulo = '',
   OrigenMov = '',
-  OrigenMovID = ''
+  OrigenMovID = '',
+  a.IVAFiscal
 FROM 
   CUP_v_CxcAuxiliarAnticipos a
 -- Campos Calculados
@@ -151,59 +154,62 @@ CROSS APPLY ( SELECT
 
 UNION -- Reevaluaciones del Mes
   
--- Reevaluaciones de Movimientos del mes
-  SELECT
-    Rama = 'REV',
-    AuxID = NULL,
-    c.Sucursal,
-    Cuenta = c.Cliente,
-    c.Mov,
-    c.MovID,
-    Modulo = 'CXC',
-    ModuloID = c.ID,
-    MovClave = t.Clave,
-    Moneda = c.ClienteMoneda,
-    TipoCambio = c.ClienteTipoCambio,
-    c.Ejercicio,
-    c.Periodo,
-    Fecha = CAST(c.FechaEmision AS DATE),
-    Cargo = 0,
-    Abono = 0,
-    Neto = 0,
-    CargoMN = ISNULL(impCargoAbono.Cargo,0),
-    AbonoMN = ISNULL(impCargoAbono.Abono,0),
-    NetoMN = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
-    EsCancelacion = 0,
-    d.Aplica,
-    d.AplicaID,
-    AplicaClave = at.Clave,
-    OrigenModulo =  '',
-    OrigenMov = '',
-    OrigenMovID = ''
-  FROM 
-    Cxc c
-  JOIN Cte ON Cte.Cliente = c.Cliente
-  JOIN CxcD d ON d.Id = c.ID
-  JOIN movtipo t ON t.Modulo = 'CXC'
-                AND t.Mov  = c.Mov 
-  LEFT JOIN movtipo at ON at.Modulo = 'CXC'
-                      AND at.Mov = d.Aplica
-  -- Cargos Abonos ( para mantener el formato del auxiliar )
-  CROSS APPLY (
-                SELECT 
-                  Cargo = CASE
-                            WHEN ISNULL(d.Importe,0) >= 0 THEN
-                              ISNULL(d.Importe,0)
-                            ELSE 
-                              0
-                          END,
-                  Abono = CASE
-                            WHEN ISNULL(d.Importe,0) < 0 THEN
-                              ABS(ISNULL(d.Importe,0))
-                            ELSE 
-                              0
-                          END
-                ) impCargoAbono
-  WHERE 
-    t.Clave = 'CXC.RE'
-  AND c.Estatus = 'CONCLUIDO'
+SELECT
+  Rama = 'REV',
+  AuxID = NULL,
+  c.Sucursal,
+  Cuenta = c.Cliente,
+  c.Mov,
+  c.MovID,
+  Modulo = 'CXC',
+  ModuloID = c.ID,
+  MovClave = t.Clave,
+  Moneda = c.ClienteMoneda,
+  TipoCambio = c.ClienteTipoCambio,
+  c.Ejercicio,
+  c.Periodo,
+  Fecha = CAST(c.FechaEmision AS DATE),
+  Cargo = 0,
+  Abono = 0,
+  Neto = 0,
+  CargoMN = ISNULL(impCargoAbono.Cargo,0),
+  AbonoMN = ISNULL(impCargoAbono.Abono,0),
+  NetoMN = ISNULL(impCargoAbono.Cargo,0) -ISNULL( impCargoAbono.Abono,0),
+  EsCancelacion = 0,
+  d.Aplica,
+  d.AplicaID,
+  AplicaClave = at.Clave,
+  OrigenModulo =  '',
+  OrigenMov = '',
+  OrigenMovID = '',
+  IVAFiscal = ISNULL(doc.IVAFiscal,0)
+FROM 
+  Cxc c
+JOIN Cte ON Cte.Cliente = c.Cliente
+JOIN CxcD d ON d.Id = c.ID
+JOIN movtipo t ON t.Modulo = 'CXC'
+              AND t.Mov  = c.Mov 
+-- Documento
+LEFT JOIN Cxc doc ON doc.Mov = d.Aplica
+                  AND doc.MovID = d.AplicaID    
+LEFT JOIN movtipo at ON at.Modulo = 'CXC'
+                    AND at.Mov = d.Aplica
+-- Cargos Abonos ( para mantener el formato del auxiliar )
+CROSS APPLY (
+              SELECT 
+                Cargo = CASE
+                          WHEN ISNULL(d.Importe,0) >= 0 THEN
+                            ISNULL(d.Importe,0)
+                          ELSE 
+                            0
+                        END,
+                Abono = CASE
+                          WHEN ISNULL(d.Importe,0) < 0 THEN
+                            ABS(ISNULL(d.Importe,0))
+                          ELSE 
+                            0
+                        END
+              ) impCargoAbono
+WHERE 
+  t.Clave = 'CXC.RE'
+AND c.Estatus = 'CONCLUIDO'
