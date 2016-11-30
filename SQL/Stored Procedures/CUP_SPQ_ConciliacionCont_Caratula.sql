@@ -12,27 +12,27 @@ END
 
 GO
 
--- =============================================
--- Created by:    Enrique Sierra Gtez
--- Creation Date: 2016-10-27
---
--- Description: Procesa la informacion
--- de la conciliacion contable en una tabla
--- que pueda ser interpretada como su caratula principal
--- 
--- Basicamente debe regresar algo  como lo siguiente: 
---
--- _______Concepto__________| _ImporteDlls_| _ConversionMN_|_ImporteMn_|_TotalMN_|_Contabilidad_|_Variacion_
--- Saldo Inicial Esperado   |
--- Movs                     |
--- Total del mes            |
--- Pólizas Manuales         |
--- Saldo Final Calculado    |
--- Saldo Final Esperado     |
--- Variacion                |
---
--- Example: EXEC CUP_SPQ_ConciliacionCont_Caratula 63527, 3 , 2016, 10
--- =============================================
+/* =============================================
+ Created by:    Enrique Sierra Gtez
+ Creation Date: 2016-10-27
+
+ Description: Procesa la informacion
+ de la conciliacion contable en una tabla
+ que pueda ser interpretada como su caratula principal
+ 
+ Basicamente debe regresar algo  como lo siguiente: 
+
+ _______Concepto__________| _ImporteDlls_| _ConversionMN_|_ImporteMn_|_TotalMN_|_Contabilidad_|_Variacion_
+ Saldo Inicial Esperado   |
+ Movs                     |
+ Total del mes            |
+ Pólizas Manuales         |
+ Saldo Final Calculado    |
+ Saldo Final Esperado     |
+ Variacion                |
+
+ Example: EXEC CUP_SPQ_ConciliacionCont_Caratula 63527, 3 , 2016, 10
+ ============================================= */
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_Caratula
   @Empleado   INT, 
@@ -234,10 +234,10 @@ AS BEGIN
   WHERE 
     Orden IN (2)
 
-  -- Polizas Manuales del mes.
+  --Polizas Manuales del mes.
   INSERT INTO 
   #tmp_CUP_ConciliacionCont_Caratula
- (
+  (
     Orden,
     Concepto,
     ImporteDlls,
@@ -246,21 +246,21 @@ AS BEGIN
     TotalMN,
     Contabilidad,
     Variacion
- )
- SELECT 
+  )
+  SELECT 
     Orden =  4,
     Mov = 'Póliza manual',
     ImporteDlls = 0,
     ImporteConversionMN = 0,
     ImporteMN = 0,
     TotalMN = 0,
-    Contabilidad = SUM( ISNULL(cont.Neto,0) ),
-    Variacion  = SUM(- ISNULL(cont.Neto,0) )
+    Contabilidad = ISNULL( SUM( ISNULL(cont.Neto, 0) ), 0),
+    Variacion    = ISNULL( SUM(- ISNULL(cont.Neto,0) ), 0)
   FROM 
-     @ImportesAuxCont cont
+      @ImportesAuxCont cont
   WHERE 
       LTRIM(RTRIM(ISNULL(cont.AuxModulo,''))) = ''
-  AND LTRIM(RTRIM(cont.AuxMov)) = ''
+  AND LTRIM(RTRIM(ISNULL(cont.AuxMov,''))) = ''
 
   -- Saldo Final Calculado 
   INSERT INTO 
