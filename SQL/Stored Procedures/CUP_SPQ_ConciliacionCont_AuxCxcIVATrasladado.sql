@@ -52,23 +52,23 @@ AS BEGIN
     CargoMN =  ROUND(
                       aux.Cargo
                       * aux.IVAFiscal 
-                      * ISNULL( movEnOrigen.TipoCambio, doc.ClienteTipoCambio )
+                      * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) )
                     , 4, 1),
     AbonoMN = ROUND( 
                        aux.Abono 
                      * aux.IVAFiscal
-                     * ISNULL( movEnOrigen.TipoCambio, doc.ClienteTipoCambio )
+                     * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio ) )
                    , 4, 1),
     NetoMN = ROUND( 
                      aux.Neto
                    * aux.IVAFiscal
-                   * ISNULL( movEnOrigen.TipoCambio, doc.ClienteTipoCambio )
+                   * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio ) )
                   , 4, 1),
     FluctuacionMN = 0,
     TotalMN = ROUND( 
                      aux.Neto
                    * aux.IVAFiscal
-                   * ISNULL( movEnOrigen.TipoCambio, doc.ClienteTipoCambio )
+                   * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio ) )
                   , 4, 1),
     aux.EsCancelacion,
     aux.Aplica,

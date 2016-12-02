@@ -111,8 +111,8 @@ CROSS APPLY ( SELECT
             ) Calc
 WHERE 
 	r.Mayor = 'CXC'
+AND ISNULL(t.Clave,'') NOT IN ('CXC.SCH','CXC.SD')
 AND a.Modulo = 'CXC'
-AND t.Clave NOT IN ('CXC.SCH','CXC.SD')
 
 UNION  -- Saldo al corte facturas anticipo
 
@@ -144,7 +144,7 @@ SELECT
   OrigenModulo = '',
   OrigenMov = '',
   OrigenMovID = '',
-  a.IVAFiscal
+  IVAFiscal = ISNULL(a.IVAFiscal,0)
 FROM 
   CUP_v_CxcAuxiliarAnticipos a
 -- Campos Calculados
