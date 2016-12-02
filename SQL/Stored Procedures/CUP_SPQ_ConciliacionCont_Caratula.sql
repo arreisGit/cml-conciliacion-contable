@@ -160,9 +160,9 @@ AS BEGIN
       Mov = auxCont.AuxMov
     FROM 
       @ImportesAuxCont auxCont
-    JOIN CUP_ConciliacionCont_Tipo_OrigenContable origenCont ON origenCont.Modulo = auxCont.AuxModulo
-                                                            AND origenCont.Mov = auxCont.AuxMov
-                                                            AND origenCont.Tipo = @Tipo
+    LEFT JOIN CUP_ConciliacionCont_Tipo_OrigenContable origenCont ON origenCont.Modulo = auxCont.AuxModulo
+                                                                 AND origenCont.Mov = auxCont.AuxMov
+                                                                 AND origenCont.Tipo = @Tipo
     WHERE 
       ISNULL(auxCont.AuxMov,'')  <> ''
     AND origenCont.Mov IS NULL
