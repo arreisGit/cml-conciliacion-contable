@@ -65,18 +65,21 @@ AS BEGIN
   -- Movimientos Auxiliar 
   DECLARE @ImportesAuxCx TABLE
   (
+    Modulo  CHAR(5),
     Mov VARCHAR(20) NOT NULL,
     ImporteDlls DECIMAL(18,4) NOT NULL,
     ImporteConversionMN DECIMAL(18,4) NOT NULL,
     ImporteMN DECIMAL(18, 4) NOT NULL,
     TotalMN DECIMAL(18, 4) NOT NULL
     PRIMARY KEY (
+                  Modulo, 
                   Mov
                  )
   )
 
   INSERT INTO @ImportesAuxCx
   (
+    Modulo,
     Mov,
     ImporteDlls,
     ImporteConversionMN,
@@ -84,6 +87,7 @@ AS BEGIN
     TotalMN
   )
   SELECT 
+    Modulo  = 'CXC',
     Mov ,
     ImporteDlls = SUM( CASE aux.Moneda 
                           WHEN 'Dlls' THEN
@@ -114,7 +118,6 @@ AS BEGIN
     Mov ASC
 
  
-
   -- Movimientos Cont 
   DECLARE @ImportesAuxCont TABLE
   (
@@ -135,7 +138,7 @@ AS BEGIN
     Neto
   )
   SELECT 
-    AuxModulo = ISNULL(NULLIF(AuxiliarModulo,''),ISNULL(OrigenModulo,'')),
+    AuxModulo =  ISNULL(NULLIF(AuxiliarModulo,''), ISNULL(OrigenModulo,'')),
     AuxMov = ISNULL(NULLIF(AuxiliarMov,''),ISNULL(OrigenMov,'')),
     Neto = SUM(ISNULL(Neto,0))
   FROM 
@@ -143,13 +146,14 @@ AS BEGIN
   WHERE 
     Empleado = @Empleado
   GROUP BY 
-    ISNULL(NULLIF(AuxiliarModulo,''),ISNULL(OrigenModulo,'')),
+    ISNULL(NULLIF(AuxiliarModulo,''), ISNULL(OrigenModulo,'')),
     ISNULL(NULLIF(AuxiliarMov,''),ISNULL(OrigenMov,''))
 
 
   ;WITH AllMovs AS 
   (
     SELECT DISTINCT
+      Modulo = 'CXC',
       Mov 
     FROM 
       @ImportesAuxCx
@@ -157,6 +161,7 @@ AS BEGIN
     UNION
 
     SELECT DISTINCT
+      Modulo = auxCont.AuxModulo,
       Mov = auxCont.AuxMov
     FROM 
       @ImportesAuxCont auxCont
@@ -164,12 +169,14 @@ AS BEGIN
                                                                  AND origenCont.Mov = auxCont.AuxMov
                                                                  AND origenCont.Tipo = @Tipo
     WHERE 
-      ISNULL(auxCont.AuxMov,'')  <> ''
+        ISNULL(auxCont.AuxModulo,'')  <> ''
+    AND ISNULL(auxCont.AuxMov,'')  <> ''
     AND origenCont.Mov IS NULL
 
     UNION
 
     SELECT DISTINCT
+      Modulo = AuxModulo,
       Mov = AuxMov
     FROM 
       CUP_ConciliacionCont_Tipo_OrigenContable
@@ -177,7 +184,8 @@ AS BEGIN
       Tipo = @Tipo
   ), DistinctMovs AS (
   SELECT DISTINCT
-    Mov
+    Modulo = LTRIM(RTRIM(Modulo)),
+    Mov = LTRIM(RTRIM(Mov))
   FROM 
     AllMovs am
  )
@@ -195,7 +203,17 @@ AS BEGIN
  )
  SELECT 
     Orden =  2,
-    dm.Mov,
+    Mov = CASE
+            WHEN 
+              ISNULL(aux.Modulo,'') = ''
+            AND ISNULL(cont.AuxModulo,'') <> '' THEN
+               '[' 
+              + LTRIM(RTRIM( ISNULL(cont.AuxModulo,'') ) ) 
+              + '] '
+              + dm.Mov
+            ELSE
+              dm.Mov
+          END, 
     ImporteDlls = ISNULL(aux.ImporteDlls,0) ,
     ImporteConversionMN = ISNULL(aux.ImporteConversionMN,0),
     ImporteMN = ISNULL(aux.ImporteMN,0),
@@ -204,8 +222,10 @@ AS BEGIN
     Variacion  = ISNULL(aux.TotalMN,0) - ISNULL(cont.Neto,0)
   FROM 
     DistinctMovs dm
-  LEFT JOIN @ImportesAuxCx aux ON LTRIM(RTRIM(aux.Mov)) = LTRIM(RTRIM(dm.Mov))
-  LEFT JOIN @ImportesAuxCont cont ON LTRIM(RTRIM(cont.AuxMov)) = LTRIM(RTRIM(dm.Mov))
+  LEFT JOIN @ImportesAuxCx aux ON LTRIM(RTRIM(aux.Modulo)) = LTRIM(RTRIM(dm.Modulo))
+                              AND LTRIM(RTRIM(aux.Mov)) = LTRIM(RTRIM(dm.Mov))
+  LEFT JOIN @ImportesAuxCont cont ON LTRIM(RTRIM(cont.AuxModulo)) = LTRIM(RTRIM(dm.Modulo))
+                                AND LTRIM(RTRIM(cont.AuxMov)) = LTRIM(RTRIM(dm.Mov))
 
   -- Total de las transacciones del mes. 
   INSERT INTO 
