@@ -9,7 +9,7 @@ GO
  Description: Regresa un listado de los
  depositos que aplicaron a solicitudes
  de deposito disparadas por cortes de caja
- ( chica o tombola ).
+ ( chica o tombola ). 
 
  Example: SELECT * 
           FROM  CUP_v_DepositosCortesCaja
@@ -27,6 +27,8 @@ CREATE VIEW CUP_v_DepositosCortesCaja
 AS    
 SELECT DISTINCT
   dep.ID,
+  dep.Empresa,
+  dep.Sucursal,
   dep.Mov,
   dep.Movid,
   dep.FechaEmision,
@@ -37,9 +39,14 @@ SELECT DISTINCT
   dep.CtaDineroDestino,
   depD.Aplica,
   depD.AplicaID,
+  dep.Moneda,
+  dep.TipoCambio,
   depD.Importe,
   depD.FormaPago,
-  solDev.IVAFiscal
+  solDev.IVAFiscal,
+  CorteID = corte.ID,
+  CorteMov = corte.Mov,
+  CorteMovID = corte.MoviD
 FROM
 Dinero dep 
 JOIN DineroD depD ON depD.ID = dep.ID
@@ -49,7 +56,7 @@ JOIN Movtipo aplicaT ON aplicaT.Modulo = 'DIN'
                   AND aplicaT.Mov = depD.Aplica
 JOIN dinero solDev ON solDev.Mov = depD.Aplica
                 AND solDev.MovID = depD.AplicaID
--- Corte Caja / Corte Tombola.
+-- Corte Origen
 CROSS APPLY(SELECT TOP 1 
             ID = mf.OID 
           FROM 
@@ -58,9 +65,11 @@ CROSS APPLY(SELECT TOP 1
             mf.Indice < 0 
           AND mf.OModulo = 'DIN'
           AND mf.OMovTipo = 'DIN.CP'
-          AND mf.OMovSubTipo = 'DIN.CPMULTIMONEDA') corte
+          AND mf.OMovSubTipo = 'DIN.CPMULTIMONEDA') corteOrigen
+ -- Corte 
+ JOIN Dinero corte ON corte.Id =corteOrigen.ID 
 WHERE 
 t.Clave = 'DIN.D'
 AND aplicaT.Clave = 'DIN.SD'
 AND dep.Estatus IN ( 'CONCLUIDO', 'CANCELADO' )
-AND corte.ID IS NOT NULL
+AND corteOrigen.ID IS NOT NULL
