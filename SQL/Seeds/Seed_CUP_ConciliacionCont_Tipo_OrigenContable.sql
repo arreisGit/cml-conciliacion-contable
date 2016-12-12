@@ -115,6 +115,7 @@ VALUES
   ( 4, 'CXC', 'Conversion Cargo',     'CXC',  'Conversion Cargo',     -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Conversion Credito',   'CXC',  'Conversion Credito',    1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Cheque Devuelto',      'CXC',  'Cheque Devuelto',       1, 0, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Deposito',             'DIN',  'Deposito',             -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Devolucion',           'CXC',  'Devolucion',           -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Devol Anticipo CFD',   'CXC',  'Devol Anticipo CFD',    1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Devol Anticipo',       'CXC',  'Devol Anticipo',        1, 0, 0, NULL,  NULL),
