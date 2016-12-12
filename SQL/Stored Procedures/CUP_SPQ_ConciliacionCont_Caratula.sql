@@ -87,7 +87,16 @@ AS BEGIN
     TotalMN
   )
   SELECT 
-    Modulo  = 'CXC',
+    Modulo  =  CASE @Tipo
+                WHEN 1 THEN 
+                  'CXP'
+                WHEN 2 THEN 
+                  'CXP'
+                WHEN 3 THEN 
+                  'CXC'
+                WHEN 4 THEN 
+                  'CXC'
+               END ,
     Mov ,
     ImporteDlls = SUM( CASE aux.Moneda 
                           WHEN 'Dlls' THEN
@@ -153,7 +162,7 @@ AS BEGIN
   ;WITH AllMovs AS 
   (
     SELECT DISTINCT
-      Modulo = 'CXC',
+      Modulo,
       Mov 
     FROM 
       @ImportesAuxCx

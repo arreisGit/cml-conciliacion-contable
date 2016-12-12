@@ -62,4 +62,16 @@ AS BEGIN
 
   END 
 
+  /* IVA TRASLADADO */
+  IF @Tipo = 3 
+  BEGIN
+    
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContCxc_IVATrasladado @Empleado, @Tipo, @Ejercicio, @Periodo
+
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas_IVATrasladado @Empleado, @Tipo, @Ejercicio, @Periodo
+
+  END 
+
 END
