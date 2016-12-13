@@ -53,9 +53,9 @@ AS BEGIN
     SaldoFinal
   )
   SELECT 
-    Mov = Aplica,
-    MovId  = ISNULL(AplicaID,''),
-    Moneda,
+    Mov = aux.Aplica,
+    MovId  = ISNULL(aux.AplicaID,''),
+    aux.Moneda,
     SaldoInicial = SUM(CASE 
                           WHEN aux.Ejercicio < @Ejercicio
                             OR (    
@@ -73,6 +73,27 @@ AS BEGIN
   LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = 4 -- IVA Trasladado
                                                 AND ex.TipoExcepcion = 1
                                                 AND ex.Valor = aux.cuenta
+  -- Movimiento
+  OUTER APPLY (
+               SELECT TOP 1
+                  cm.CtaDinero,
+                  cm.Estatus
+               FROM 
+                  Cxc cm 
+               WHERE 
+                 aux.Modulo = 'CXC'
+               AND cm.ID = aux.ModuloID 
+               UNION 
+               SELECT TOP 1
+                  CtaDinero = NULL,
+                  vm.Estatus
+               FROM 
+                Venta vm 
+               WHERE 
+                 aux.Modulo = 'VTAS'
+               AND vm.ID = aux.ModuloID 
+            ) mov
+  LEFT JOIN CtaDinero ON CtaDinero.CtaDinero = mov.CtaDinero
   WHERE 
     aux.Rama <> 'REV'
   AND aux.MovClave NOT IN ('CXC.RE')
@@ -84,6 +105,9 @@ AS BEGIN
           )
       )
   AND eX.Id IS NULL
+  -- Cobros a Caja Chica no afectan el IVA TRASLADADO 
+  -- hasta el deposito.
+  AND NOT ( aux.MovClave = 'CXC.C' AND CtaDinero.Tipo = 'Caja')
   GROUP BY 
     aux.Aplica,
     aux.AplicaID,

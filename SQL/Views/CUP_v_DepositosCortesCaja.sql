@@ -48,7 +48,7 @@ SELECT DISTINCT
   CorteMov = corte.Mov,
   CorteMovID = corte.MoviD
 FROM
-Dinero dep 
+  Dinero dep 
 JOIN DineroD depD ON depD.ID = dep.ID
 JOIN Movtipo t ON t.Modulo = 'DIN'
             AND t.Mov = dep.Mov
@@ -56,20 +56,14 @@ JOIN Movtipo aplicaT ON aplicaT.Modulo = 'DIN'
                   AND aplicaT.Mov = depD.Aplica
 JOIN dinero solDev ON solDev.Mov = depD.Aplica
                 AND solDev.MovID = depD.AplicaID
--- Corte Origen
-CROSS APPLY(SELECT TOP 1 
-            ID = mf.OID 
-          FROM 
-            dbo.fnCMLMovFlujo('DIN', solDev.ID, 1) mf 
-          WHERE 
-            mf.Indice < 0 
-          AND mf.OModulo = 'DIN'
-          AND mf.OMovTipo = 'DIN.CP'
-          AND mf.OMovSubTipo = 'DIN.CPMULTIMONEDA') corteOrigen
+JOIN Movtipo solDevOrigenTipo ON solDevOrigenTipo.Modulo = solDev.OrigenTipo
+                             AND solDevOrigenTipo.Mov = solDev.Origen
  -- Corte 
- JOIN Dinero corte ON corte.Id =corteOrigen.ID 
+JOIN Dinero corte ON corte.Mov = solDev.Origen
+                 AND corte.MovID = solDev.OrigenID
 WHERE 
-t.Clave = 'DIN.D'
+  t.Clave = 'DIN.D'
 AND aplicaT.Clave = 'DIN.SD'
 AND dep.Estatus IN ( 'CONCLUIDO', 'CANCELADO' )
-AND corteOrigen.ID IS NOT NULL
+AND solDevOrigenTipo.Modulo = 'DIN'
+AND solDevOrigenTipo.Clave = 'DIN.CP'

@@ -29,36 +29,23 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxCxcIVATrasladado
 AS BEGIN 
 
   SET NOCOUNT ON;
-  
-  -- Tabla utilizada a modo de "workaround" 
-  -- para poder simular el efecto de "EsCancelacion"
-  -- directo en el modulo.
-  DECLARE @EstatusValidos TABlE
-  (
-    Estatus VARCHAR(15) NOT NULL,
-    EsCancelacion BIT NOT NULL ,
-    Factor SMALLINT NOT NULL,
-    PRIMARY KEY (
-                  Estatus,
-                  EsCancelacion
-                )
-  )
-  
-  INSERT INTO @EstatusValidos
-  ( 
-    Estatus,
-    EsCancelacion,
-    Factor
-  )
-  VALUES 
-    ( 'CONCLUIDO', 0,  1)
-  ,( 'CANCELADO', 0,  1 )
-  ,( 'CANCELADO', 1, -1 )
 
-  IF OBJECT_ID('tempdb..#CUP_DepisitosCortesCaja') IS NOT NULL
-   DROP TABLE #CUP_DepisitosCortesCaja
+  DECLARE 
+    @FechaInicio DATETIME = CAST(  
+                                  CAST( @Ejercicio As VARCHAR )
+                                  + '-'
+                                  + CAST(  @Periodo As VARCHAR )
+                                  + '-'
+                                  + '01'
+                                 AS DATE),
+    @FechaFin DATETIME
+  
+  SET @FechaFin = DATEADD( DAY, -1, DATEADD( MONTH, 1, @FechaInicio ) )
+  
+  IF OBJECT_ID('tempdb..##CUP_AuxDepositosCortesCaja') IS NOT NULL
+   DROP TABLE #CUP_AuxDepositosCortesCaja
 
-  CREATE TABLE #CUP_DepisitosCortesCaja
+  CREATE TABLE #CUP_AuxDepositosCortesCaja
   (
     Empresa VARCHAR(5) NOT NULL,
     Sucursal INT NOT NULL,
@@ -77,41 +64,16 @@ AS BEGIN
     TipoCambio FLOAT NOT NULL,
     Cargo DECIMAL(18,4) NOT NULL,
     Abono DECIMAL(18,4) NOT NULL,
+    Neto DECIMAL(18,4) NOT NULL,
     FormaPago	VARCHAR(50) NULL,
     IVAFiscal FLOAT NOT NULL,
     CorteID INT NOT NULL,
     CorteMov CHAR(20) NOT NULL,
-    CorteMovID VARCHAR(20) NULL
+    CorteMovID VARCHAR(20) NULL,
+    EsCancelacion BIT NOT NULL
   )
 
-  CREATE NONCLUSTERED INDEX [IX_#CUP_DepisitosCortesCaja_Estatus]
-  ON [dbo].[#CUP_DepisitosCortesCaja] ( Estatus )
-  INCLUDE ( 
-            Empresa,
-            Sucursal,
-            ID,
-            Mov,
-            Movid,
-            FechaEmision,
-            Ejercicio,
-            Periodo,
-            CtaDinero,
-            CtaDineroDestino,
-            Aplica,
-            AplicaID,
-            Moneda,
-            TipoCambio,
-            Cargo,
-            Abono,
-            FormaPago,
-            IVAFiscal,
-            CorteID,
-            CorteMov,
-            CorteMovID
-          )
-
-
-  INSERT INTO #CUP_DepisitosCortesCaja 
+  INSERT INTO #CUP_AuxDepositosCortesCaja 
   (
     Empresa,
     Sucursal,
@@ -130,57 +92,15 @@ AS BEGIN
     TipoCambio,
     Cargo,
     Abono,
+    Neto,
     FormaPago,
     IVAFiscal,
     CorteID,
     CorteMov,
-    CorteMovID
+    CorteMovID,
+    EsCancelacion
   )
-  SELECT 
-    depositos.Empresa,
-    depositos.Sucursal,
-    depositos.ID,
-    depositos.Mov,
-    depositos.Movid,
-    depositos.FechaEmision,
-    depositos.Ejercicio,
-    depositos.Periodo,
-    depositos.Estatus,
-    depositos.CtaDinero,
-    depositos.CtaDineroDestino,
-    depositos.Aplica,
-    depositos.AplicaID,
-    depositos.Moneda,
-    depositos.TipoCambio,
-    Cargo = impCargoAbono.Cargo,
-    Abono = impCargoAbono.Abono,
-    depositos.FormaPago,
-    IVAFiscal = ISNULL(depositos.IVAFiscal,0),
-    depositos.CorteID,
-    depositos.CorteMov,
-    depositos.CorteMovID
-  FROM 
-    CUP_v_DepositosCortesCaja depositos
-  -- Cargos Abonos ( para mantener el formato del auxiliar )
-  CROSS APPLY (
-              SELECT 
-                Cargo = CASE
-                          WHEN ISNULL(depositos.Importe,0) <= 0 THEN
-                            ABS(ISNULL(depositos.Importe,0))
-                          ELSE 
-                            0
-                        END,
-                Abono = CASE
-                          WHEN ISNULL(depositos.Importe,0) > 0 THEN
-                            ISNULL(depositos.Importe,0)
-                          ELSE 
-                            0
-                        END
-              ) impCargoAbono
-  WHERE
-    depositos.Ejercicio = @Ejercicio
-  AND depositos.Periodo = @Periodo
-   
+  EXEC CUP_SPQ_AuxiliarDepositosCortesCaja @FechaInicio, @FechaFin, NULL
 
   SELECT
     Empleado = @Empleado,
@@ -325,33 +245,24 @@ AS BEGIN
                      ISNULL( calc.Neto, 0)
                    * depositos.TipoCambio
                   , 4, 1),
-    eV.EsCancelacion,
+    depositos.EsCancelacion,
     depositos.Aplica,
     depositos.AplicaID,
     OrigenTipo = 'DIN',
     Origen = depositos.CorteMov,
     OrigenID = depositos.CorteMovID
   FROM 
-    #CUP_DepisitosCortesCaja depositos
-  JOIN  @EstatusValidos eV ON eV.Estatus = depositos.Estatus
-  -- calculados
-  CROSS APPLY ( 
-                SELECT 
-                  Cargo = ISNULL(depositos.Cargo,0) 
-                         * depositos.IVAFiscal
-                         * ev.Factor,
-                  Abono = ISNULL(depositos.Abono,0)
-                        * depositos.IVAFiscal
-                        * ev.Factor,
-                  Neto = (
-                           ISNULL(depositos.Cargo,0) 
-                         - ISNULL(depositos.Abono,0)
-                          )
-                         * depositos.IVAFiscal
-                         * ev.Factor
-              ) calc
-  WHERE
-    depositos.Ejercicio = @Ejercicio
-  AND depositos.Periodo = @Periodo
+    #CUP_AuxDepositosCortesCaja depositos
+  -- Calculados
+  CROSS APPLY(
+             SELECT 
+               Cargo = ISNULL(depositos.Cargo, 0) 
+                     * ISNULL(depositos.IVAFiscal, 0),
+               Abono = ISNULL(depositos.Abono, 0) 
+                     * ISNULL(depositos.IVAFiscal, 0),
+               Neto  = ISNULL(depositos.Neto, 0) 
+                     * ISNULL(depositos.IVAFiscal, 0)    
+             ) calc
+
    
 END
