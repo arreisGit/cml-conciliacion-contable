@@ -30,6 +30,79 @@ AS BEGIN
 
   SET NOCOUNT ON;
 
+  DECLARE
+    @OnceUponATime DATETIME = '1900-01-01',
+    @FechaInicio DATETIME = CAST(  
+                                  CAST( @Ejercicio As VARCHAR )
+                                  + '-'
+                                  + CAST(  @Periodo As VARCHAR )
+                                  + '-'
+                                  + '01'
+                                 AS DATE),
+    @FechaFin DATETIME
+  
+  SET @FechaFin = DATEADD( DAY, -1, DATEADD( MONTH, 1, @FechaInicio ) )
+  
+  IF OBJECT_ID('tempdb..##CUP_AuxDepositosCortesCajaHist') IS NOT NULL
+    DROP TABLE #CUP_AuxDepositosCortesCajaHist
+
+  CREATE TABLE #CUP_AuxDepositosCortesCajaHist
+  (
+    Empresa VARCHAR(5) NOT NULL,
+    Sucursal INT NOT NULL,
+    ID INT NOT NULL,
+    Mov CHAR(20) NOT NULL,
+    Movid	VARCHAR(20) NOT NULL,
+    FechaEmision DATETIME NOT NULL,
+    Ejercicio	INT NOT NULL,
+    Periodo INT NOT NULL,
+    Estatus	VARCHAR(15) NOT NULL,
+    CtaDinero CHAR(10)	NOT NULL,
+    CtaDineroDestino CHAR(10) NULL,
+    Aplica CHAR(20) NOT NULL,
+    AplicaID VARCHAR(20) NOT NULL,
+    Moneda CHAR(10) NOT NULL,
+    TipoCambio FLOAT NOT NULL,
+    Cargo DECIMAL(18,4) NOT NULL,
+    Abono DECIMAL(18,4) NOT NULL,
+    Neto DECIMAL(18,4) NOT NULL,
+    FormaPago	VARCHAR(50) NULL,
+    IVAFiscal FLOAT NOT NULL,
+    CorteID INT NOT NULL,
+    CorteMov CHAR(20) NOT NULL,
+    CorteMovID VARCHAR(20) NULL,
+    EsCancelacion BIT NOT NULL
+  )
+
+  INSERT INTO #CUP_AuxDepositosCortesCajaHist 
+  (
+    Empresa,
+    Sucursal,
+    ID,
+    Mov,
+    Movid,
+    FechaEmision,
+    Ejercicio,
+    Periodo,
+    Estatus,
+    CtaDinero,
+    CtaDineroDestino,
+    Aplica,
+    AplicaID,
+    Moneda,
+    TipoCambio,
+    Cargo,
+    Abono,
+    Neto,
+    FormaPago,
+    IVAFiscal,
+    CorteID,
+    CorteMov,
+    CorteMovID,
+    EsCancelacion
+  )
+  EXEC CUP_SPQ_AuxiliarDepositosCortesCaja @OnceUponATime, @FechaFin, NULL
+
   DECLARE @AntSaldosCxCorte TABLE
   (
     Mov CHAR(20) NOT NULL,
@@ -126,6 +199,30 @@ AS BEGIN
           END)
     , 4, 1) <>  0
   OR ROUND( SUM(  ( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) ) * aux.IVAFiscal  ), 4, 1)  <> 0
+
+  UNION
+
+  SELECT 
+    aux.Mov,
+    aux.MovID,
+    aux.Moneda,
+    SaldoInicial = SUM(CASE 
+                          WHEN aux.Ejercicio < @Ejercicio
+                            OR (    
+                                    aux.Ejercicio = @Ejercicio
+                                ANd aux.Periodo < @Periodo
+                                ) THEN 
+                              ISNULL(aux.Neto,0) 
+                          ELSE
+                            0
+                        END),
+    SaldoFinal = SUM( ISNULL(aux.Neto,0))
+  FROM 
+    #CUP_AuxDepositosCortesCajaHist aux
+  GROUP BY 
+    aux.Mov,
+    aux.MovID,
+    aux.Moneda
 
   -- Regresa el saldo inicial y final en un formato lineal.
   SELECT 
