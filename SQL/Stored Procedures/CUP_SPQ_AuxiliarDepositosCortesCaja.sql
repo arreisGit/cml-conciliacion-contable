@@ -56,10 +56,10 @@ AS BEGIN
   ,( 'CANCELADO', 1, -1 )
   
 
-  IF OBJECT_ID('tempdb..#CUP_DepisitosCortesCaja') IS NOT NULL
-   DROP TABLE #CUP_DepisitosCortesCaja
+  IF OBJECT_ID('tempdb..#CUP_DepositosCortesCaja') IS NOT NULL
+   DROP TABLE #CUP_DepositosCortesCaja
 
-  CREATE TABLE #CUP_DepisitosCortesCaja
+  CREATE TABLE #CUP_DepositosCortesCaja
   (
     Empresa VARCHAR(5) NOT NULL,
     Sucursal INT NOT NULL,
@@ -85,8 +85,8 @@ AS BEGIN
     CorteMovID VARCHAR(20) NULL
   )
 
-  CREATE NONCLUSTERED INDEX [IX_#CUP_DepisitosCortesCaja_Estatus]
-  ON [dbo].[#CUP_DepisitosCortesCaja] ( Estatus )
+  CREATE NONCLUSTERED INDEX [IX_#CUP_DepositosCortesCaja_Estatus]
+  ON [dbo].[#CUP_DepositosCortesCaja] ( Estatus )
   INCLUDE ( 
             Empresa,
             Sucursal,
@@ -112,7 +112,7 @@ AS BEGIN
           )
 
 
-  INSERT INTO #CUP_DepisitosCortesCaja 
+  INSERT INTO #CUP_DepositosCortesCaja 
   (
     Empresa,
     Sucursal,
@@ -182,46 +182,120 @@ AS BEGIN
     depositos.FechaEmision BETWEEN @FechaD AND @FechaA
   AND depositos.Sucursal = ISNULL(@Sucursal, depositos.Sucursal)
 
- SELECT  
-    depositos.Empresa,
-    depositos.Sucursal,
-    depositos.Id,
-    depositos.Mov,
-    depositos.MovId,
-    Fecha = depositos.FechaEmision,
-    depositos.Ejercicio,
-    depositos.Periodo,
-    depositos.Estatus,
-    depositos.CtaDinero,
-    depositos.CtaDineroDestino,
-    depositos.Aplica,
-    depositos.AplicaID,
-    depositos.Moneda,
-    depositos.TipoCambio,
-    Cargo =  ROUND( ISNULL( calc.Cargo, 0), 4, 1),
-    Abono = ROUND( ISNULL( calc.Abono, 0), 4, 1),
-    Neto = ROUND( ISNULL( calc.Neto, 0) , 4, 1),
-    depositos.FormaPago,
-    depositos.IVAFiscal,
-    depositos.CorteID,
-    depositos.CorteMov,
-    depositos.CorteMovID,
-    eV.EsCancelacion
-  FROM 
-    #CUP_DepisitosCortesCaja depositos
-  JOIN  @EstatusValidos eV ON eV.Estatus = depositos.Estatus
-  -- calculados
-  CROSS APPLY ( 
-                SELECT 
-                  Cargo = ISNULL(depositos.Cargo,0) 
-                         * ev.Factor,
-                  Abono = ISNULL(depositos.Abono,0)
-                        * ev.Factor,
-                  Neto = (
-                           ISNULL(depositos.Cargo,0) 
-                         - ISNULL(depositos.Abono,0)
-                          )
-                         * ev.Factor
-              ) calc
-
+  IF OBJECT_ID('tempdb..#CUP_AuxDepositosCortesCaja') IS NOT NULL
+  BEGIN
+   
+    INSERT INTO #CUP_AuxDepositosCortesCaja 
+    (
+      Empresa,
+      Sucursal,
+      ID,
+      Mov,
+      Movid,
+      FechaEmision,
+      Ejercicio,
+      Periodo,
+      Estatus,
+      CtaDinero,
+      CtaDineroDestino,
+      Aplica,
+      AplicaID,
+      Moneda,
+      TipoCambio,
+      Cargo,
+      Abono,
+      Neto,
+      FormaPago,
+      IVAFiscal,
+      CorteID,
+      CorteMov,
+      CorteMovID,
+      EsCancelacion
+    )
+    SELECT  
+      depositos.Empresa,
+      depositos.Sucursal,
+      depositos.Id,
+      depositos.Mov,
+      depositos.MovId,
+      Fecha = depositos.FechaEmision,
+      depositos.Ejercicio,
+      depositos.Periodo,
+      depositos.Estatus,
+      depositos.CtaDinero,
+      depositos.CtaDineroDestino,
+      depositos.Aplica,
+      depositos.AplicaID,
+      depositos.Moneda,
+      depositos.TipoCambio,
+      Cargo =  ROUND( ISNULL( calc.Cargo, 0), 4, 1),
+      Abono = ROUND( ISNULL( calc.Abono, 0), 4, 1),
+      Neto = ROUND( ISNULL( calc.Neto, 0) , 4, 1),
+      depositos.FormaPago,
+      depositos.IVAFiscal,
+      depositos.CorteID,
+      depositos.CorteMov,
+      depositos.CorteMovID,
+      eV.EsCancelacion
+    FROM 
+      #CUP_DepositosCortesCaja depositos
+    JOIN  @EstatusValidos eV ON eV.Estatus = depositos.Estatus
+    -- calculados
+    CROSS APPLY ( 
+                  SELECT 
+                    Cargo = ISNULL(depositos.Cargo,0) 
+                           * ev.Factor,
+                    Abono = ISNULL(depositos.Abono,0)
+                          * ev.Factor,
+                    Neto = (
+                             ISNULL(depositos.Cargo,0) 
+                           - ISNULL(depositos.Abono,0)
+                            )
+                           * ev.Factor
+                ) calc
+  END
+  ELSE 
+  BEGIN
+    SELECT  
+      depositos.Empresa,
+      depositos.Sucursal,
+      depositos.Id,
+      depositos.Mov,
+      depositos.MovId,
+      Fecha = depositos.FechaEmision,
+      depositos.Ejercicio,
+      depositos.Periodo,
+      depositos.Estatus,
+      depositos.CtaDinero,
+      depositos.CtaDineroDestino,
+      depositos.Aplica,
+      depositos.AplicaID,
+      depositos.Moneda,
+      depositos.TipoCambio,
+      Cargo =  ROUND( ISNULL( calc.Cargo, 0), 4, 1),
+      Abono = ROUND( ISNULL( calc.Abono, 0), 4, 1),
+      Neto = ROUND( ISNULL( calc.Neto, 0) , 4, 1),
+      depositos.FormaPago,
+      depositos.IVAFiscal,
+      depositos.CorteID,
+      depositos.CorteMov,
+      depositos.CorteMovID,
+      eV.EsCancelacion
+    FROM 
+      #CUP_DepositosCortesCaja depositos
+    JOIN  @EstatusValidos eV ON eV.Estatus = depositos.Estatus
+    -- calculados
+    CROSS APPLY ( 
+                  SELECT 
+                    Cargo = ISNULL(depositos.Cargo,0) 
+                           * ev.Factor,
+                    Abono = ISNULL(depositos.Abono,0)
+                          * ev.Factor,
+                    Neto = (
+                             ISNULL(depositos.Cargo,0) 
+                           - ISNULL(depositos.Abono,0)
+                            )
+                           * ev.Factor
+                ) calc
+  END
 END

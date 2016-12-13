@@ -42,7 +42,7 @@ AS BEGIN
   
   SET @FechaFin = DATEADD( DAY, -1, DATEADD( MONTH, 1, @FechaInicio ) )
   
-  IF OBJECT_ID('tempdb..##CUP_AuxDepositosCortesCaja') IS NOT NULL
+  IF OBJECT_ID('tempdb..#CUP_AuxDepositosCortesCaja') IS NOT NULL
    DROP TABLE #CUP_AuxDepositosCortesCaja
 
   CREATE TABLE #CUP_AuxDepositosCortesCaja
@@ -72,34 +72,7 @@ AS BEGIN
     CorteMovID VARCHAR(20) NULL,
     EsCancelacion BIT NOT NULL
   )
-
-  INSERT INTO #CUP_AuxDepositosCortesCaja 
-  (
-    Empresa,
-    Sucursal,
-    ID,
-    Mov,
-    Movid,
-    FechaEmision,
-    Ejercicio,
-    Periodo,
-    Estatus,
-    CtaDinero,
-    CtaDineroDestino,
-    Aplica,
-    AplicaID,
-    Moneda,
-    TipoCambio,
-    Cargo,
-    Abono,
-    Neto,
-    FormaPago,
-    IVAFiscal,
-    CorteID,
-    CorteMov,
-    CorteMovID,
-    EsCancelacion
-  )
+  
   EXEC CUP_SPQ_AuxiliarDepositosCortesCaja @FechaInicio, @FechaFin, NULL
 
   SELECT

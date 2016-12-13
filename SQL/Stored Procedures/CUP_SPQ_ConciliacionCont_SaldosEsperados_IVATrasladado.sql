@@ -43,10 +43,10 @@ AS BEGIN
   
   SET @FechaFin = DATEADD( DAY, -1, DATEADD( MONTH, 1, @FechaInicio ) )
   
-  IF OBJECT_ID('tempdb..##CUP_AuxDepositosCortesCajaHist') IS NOT NULL
-    DROP TABLE #CUP_AuxDepositosCortesCajaHist
+  IF OBJECT_ID('tempdb..#CUP_AuxDepositosCortesCaja') IS NOT NULL
+    DROP TABLE #CUP_AuxDepositosCortesCaja
 
-  CREATE TABLE #CUP_AuxDepositosCortesCajaHist
+  CREATE TABLE #CUP_AuxDepositosCortesCaja
   (
     Empresa VARCHAR(5) NOT NULL,
     Sucursal INT NOT NULL,
@@ -74,33 +74,6 @@ AS BEGIN
     EsCancelacion BIT NOT NULL
   )
 
-  INSERT INTO #CUP_AuxDepositosCortesCajaHist 
-  (
-    Empresa,
-    Sucursal,
-    ID,
-    Mov,
-    Movid,
-    FechaEmision,
-    Ejercicio,
-    Periodo,
-    Estatus,
-    CtaDinero,
-    CtaDineroDestino,
-    Aplica,
-    AplicaID,
-    Moneda,
-    TipoCambio,
-    Cargo,
-    Abono,
-    Neto,
-    FormaPago,
-    IVAFiscal,
-    CorteID,
-    CorteMov,
-    CorteMovID,
-    EsCancelacion
-  )
   EXEC CUP_SPQ_AuxiliarDepositosCortesCaja @OnceUponATime, @FechaFin, NULL
 
   DECLARE @AntSaldosCxCorte TABLE
@@ -212,13 +185,13 @@ AS BEGIN
                                     aux.Ejercicio = @Ejercicio
                                 ANd aux.Periodo < @Periodo
                                 ) THEN 
-                              ISNULL(aux.Neto,0) 
+                              ISNULL(aux.Neto,0) * ISNULL(aux.IVAFiscal, 0)
                           ELSE
                             0
                         END),
-    SaldoFinal = SUM( ISNULL(aux.Neto,0))
+    SaldoFinal = SUM( ISNULL(aux.Neto,0)  * ISNULL(aux.IVAFiscal, 0))
   FROM 
-    #CUP_AuxDepositosCortesCajaHist aux
+    #CUP_AuxDepositosCortesCaja aux
   GROUP BY 
     aux.Mov,
     aux.MovID,
