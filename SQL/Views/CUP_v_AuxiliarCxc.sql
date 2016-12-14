@@ -63,6 +63,8 @@ LEFT JOIN Cxc doc ON doc.Mov = a.Aplica
                  AND doc.Movid = a.AplicaID
 LEFT JOIN Movtipo at ON at.Modulo = 'CXC'
                     AND at.Mov = a.Aplica
+LEFT JOIN cxc aplica ON aplica.Mov = a.Aplica
+                    AND aplica.MovID = a.AplicaID
 -- Campos Calculados
 CROSS APPLY ( SELECT
                 Mov = CASE 
@@ -89,7 +91,7 @@ CROSS APPLY ( SELECT
                 ModuloID = CASE 
                               WHEN ISNULL(t.Clave,'') = 'CXC.NC'
                             AND a.Mov = 'Saldos Cte' THEN
-                                1
+                                aplica.ID
                               ELSE
                                 a.ModuloID
                             END,
