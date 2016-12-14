@@ -24,7 +24,6 @@ GO
   Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContCxc 63527, 3, 2016, 10
  ============================================= */
 
-
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContCxc
   @Empleado INT,
   @Tipo INT,
