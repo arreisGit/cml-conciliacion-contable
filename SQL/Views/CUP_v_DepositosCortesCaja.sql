@@ -43,7 +43,7 @@ SELECT DISTINCT
   dep.TipoCambio,
   depD.Importe,
   depD.FormaPago,
-  solDev.IVAFiscal,
+  IVAFiscal = ( 16.0 / 116.0 ),--solDev.IVAFiscal,
   CorteID = corte.ID,
   CorteMov = corte.Mov,
   CorteMovID = corte.MoviD
