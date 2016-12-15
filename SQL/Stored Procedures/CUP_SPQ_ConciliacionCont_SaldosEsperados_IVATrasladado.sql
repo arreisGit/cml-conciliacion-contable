@@ -238,6 +238,18 @@ AS BEGIN
                  'VTAS'    =  mfOrigen.OModulo 
                 AND vta.ID = mfOrigen.OID
               ) movEnOrigen
+  -- Primer Tc
+   OUTER APPLY(SELECT TOP 1 
+                 first_aux.TipoCambio
+               FROM 
+                 Auxiliar first_aux 
+               JOIN Rama fr ON fr.Rama = first_aux.Rama 
+               WHERE 
+                 fr.Mayor = 'CXC'
+               AND first_aux.Modulo = 'CXC'
+               AND first_aux.ModuloID = doc.ID
+               ORDER BY 
+                first_aux.ID ASC ) primer_tc
   -- Calculados
   CROSS APPLY (
                 SELECT
@@ -249,7 +261,8 @@ AS BEGIN
                                         END,
                   ImporteInicialConversionMN = CASE aux.Moneda
                                           WHEN 'Dlls' THEN 
-                                            ISNULL(aux.SaldoInicial,0) * ISNULL(movEnOrigen.TipoCambio,doc.ClienteTipoCambio)
+                                            ISNULL(aux.SaldoInicial,0)
+                                          * ISNULL(movEnOrigen.TipoCambio,ISNULL(primer_tc.TipoCambio,doc.TipoCambio))
                                           ELSE 
                                             0
                                         END,  
@@ -267,7 +280,8 @@ AS BEGIN
                                         END,
                   ImporteFinalConversionMN = CASE aux.Moneda
                                                 WHEN 'Dlls' THEN 
-                                                  ISNULL(aux.SaldoFinal,0) * ISNULL(movEnOrigen.TipoCambio,doc.ClienteTipoCambio)
+                                                  ISNULL(aux.SaldoFinal,0)
+                                                * ISNULL(movEnOrigen.TipoCambio,ISNULL(primer_tc.TipoCambio,doc.TipoCambio))
                                                 ELSE 
                                                   0
                                               END,  
