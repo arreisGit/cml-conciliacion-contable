@@ -96,23 +96,23 @@ AS BEGIN
     CargoMN =  ROUND(
                       aux.Cargo
                       * aux.IVAFiscal 
-                      * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) )
+                      * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                     , 4, 1),
     AbonoMN = ROUND( 
                        aux.Abono 
                      * aux.IVAFiscal
-                     * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio ) )
+                     * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                    , 4, 1),
     NetoMN = ROUND( 
                      aux.Neto
-                   * aux.IVAFiscal
-                   * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio ) )
+                    * aux.IVAFiscal
+                    * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                   , 4, 1),
     FluctuacionMN = 0,
     TotalMN = ROUND( 
                      aux.Neto
                    * aux.IVAFiscal
-                   * ISNULL( movEnOrigen.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio ) )
+                    * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                   , 4, 1),
     aux.EsCancelacion,
     aux.Aplica,
@@ -171,6 +171,18 @@ AS BEGIN
                  'VTAS'    =  mfOrigen.OModulo 
                 AND vta.ID = mfOrigen.OID
               ) movEnOrigen
+   -- Primer Tc
+   OUTER APPLY(SELECT TOP 1 
+                 first_aux.TipoCambio
+               FROM 
+                 Auxiliar first_aux 
+               JOIN Rama fr ON fr.Rama = first_aux.Rama 
+               WHERE 
+                 fr.Mayor = 'CXC'
+               AND first_aux.Modulo = 'CXC'
+               AND first_aux.ModuloID = doc.ID
+               ORDER BY 
+                first_aux.ID ASC ) primer_tc
   WHERE 
     aux.Ejercicio = @Ejercicio
   AND aux.Periodo = @Periodo

@@ -262,7 +262,7 @@ AS BEGIN
                   ImporteInicialConversionMN = CASE aux.Moneda
                                           WHEN 'Dlls' THEN 
                                             ISNULL(aux.SaldoInicial,0)
-                                          * ISNULL(movEnOrigen.TipoCambio,ISNULL(primer_tc.TipoCambio,doc.TipoCambio))
+                                          * ISNULL(movEnOrigen.TipoCambio,ISNULL(primer_tc.TipoCambio,doc.ClienteTipoCambio))
                                           ELSE 
                                             0
                                         END,  
@@ -281,7 +281,7 @@ AS BEGIN
                   ImporteFinalConversionMN = CASE aux.Moneda
                                                 WHEN 'Dlls' THEN 
                                                   ISNULL(aux.SaldoFinal,0)
-                                                * ISNULL(movEnOrigen.TipoCambio,ISNULL(primer_tc.TipoCambio,doc.TipoCambio))
+                                                * ISNULL(movEnOrigen.TipoCambio,ISNULL(primer_tc.TipoCambio,doc.ClienteTipoCambio))
                                                 ELSE 
                                                   0
                                               END,  
