@@ -51,7 +51,7 @@ SELECT
   OrigenModulo = ISNULL(c.OrigenTipo,''),
   OrigenMov = ISNULL(c.Origen,''),
   OrigenMovID = ISNULL(c.OrigenID,''),
-  IVAFiscal = ISNULL(doc.IVAFiscal,0)
+  IVAFiscal = ISNULL(calc.IVAFiscal,0)
 FROM 
 	Auxiliar a
 JOIN Rama r on r.Rama = a.Rama
@@ -109,6 +109,13 @@ CROSS APPLY ( SELECT
                                 ELSE
                                   a.AplicaID
                               END, 
+                IVAFiscal = CASE
+                              WHEN ISNULL(at.Clave,'') = 'CXC.NC'
+                                AND a.Aplica = 'Saldos Cte' THEN
+                                   16.0/116.0
+                                ELSE
+                                  ISNULL(doc.IVAFiscal,0)
+                              END,
                 Neto = ISNULL(a.Cargo,0) - ISNULL( a.Abono,0)
             ) Calc
 WHERE 
