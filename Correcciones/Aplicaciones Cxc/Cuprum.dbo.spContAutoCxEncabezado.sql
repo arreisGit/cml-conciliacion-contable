@@ -1,8 +1,6 @@
-﻿USE Cuprum
+﻿SET ANSI_NULLS, QUOTED_IDENTIFIER OFF
 GO
-SET ANSI_NULLS, QUOTED_IDENTIFIER OFF
-GO
-CREATE PROCEDURE dbo.spContAutoCxEncabezado
+ALTER PROCEDURE dbo.spContAutoCxEncabezado
 @Empresa		varchar(5),
 @Sucursal		int,
 @Modulo			varchar(5),
@@ -131,7 +129,8 @@ FROM CxcD d
 JOIN CxcAplica a  ON a.Mov = d.Aplica AND a.MovID = d.AplicaID AND a.Empresa = @Empresa
 LEFT OUTER JOIN CxReevaluacionLog l ON l.Modulo = @Modulo AND l.ID = d.ID AND l.Renglon = d.Renglon AND l.RenglonSub = d.RenglonSub
 WHERE d.ID = @ID
-SELECT @Diferencia = @CxImporteTotalMN - @CxImporteAplicaMN
+--SELECT @Diferencia = @CxImporteTotalMN - @CxImporteAplicaMN
+SELECT @Diferencia = (SELECT SUM(Diferencia_Cambiaria_MN) FROM CUP_v_CxDiferenciasCambiarias WHERE ModuloID = @ID AND Modulo = 'CXC')
 SELECT @DiferenciaIVA = @CxIVAMN - @CxIVAAplicaMN,
 @DiferenciaIEPS = @CxIEPSMN - @CxIEPSAplicaMN
 IF ISNULL(@Diferencia, 0) <> 0
@@ -306,4 +305,3 @@ END
 END
 RETURN
 END
-GO
