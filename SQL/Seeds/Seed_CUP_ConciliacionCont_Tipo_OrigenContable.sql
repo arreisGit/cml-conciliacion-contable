@@ -76,7 +76,7 @@ VALUES
   ( 2, 'CXP', 'Pago',                 'CXP',  'Pago',                 -1, 0, 0, NULL,  NULL),
    /* Saldo Clientes  */
   ( 3, 'CXC', 'Ajuste',               'CXC',  'Ajuste',                -1, 0, 0, NULL,  NULL),
-  ( 3, 'CXC', 'Ajuste Redondeo',      'CXC',  'Ajuste Redondeo',       -1, 0, 0, NULL,  NULL),
+  ( 3, 'CXC', 'Ajuste Redondeo',      'CXC',  'Ajuste Redondeo',       1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Aplicacion',           'CXC',  'Aplicacion',            1, 1, 0, NULL,  NULL),
   ( 3, 'CXC', 'Cobro' ,               'CXC',  'Cobro',                -1, 0, 0, NULL,  NULL),
   ( 3, 'CXC', 'Cobro Anticipo',       'CXC',  'Cobro Anticipo',       -1, 0, 0, NULL,  NULL),
