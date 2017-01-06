@@ -51,7 +51,13 @@ SELECT
   OrigenModulo = ISNULL(c.OrigenTipo,''),
   OrigenMov = ISNULL(c.Origen,''),
   OrigenMovID = ISNULL(c.OrigenID,''),
-  IVAFiscal = ISNULL(calc.IVAFiscal,0)
+  IVAFiscal = ISNULL(calc.IVAFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(doc.IVAFiscal,0) <= 0 THEN
+                        0
+                      ELSE
+                        ISNULL(doc.Retencion,0) / ISNULL(doc.Impuestos,0)
+                    END
 FROM 
 	Auxiliar a
 JOIN Rama r on r.Rama = a.Rama
@@ -63,8 +69,6 @@ LEFT JOIN Cxc doc ON doc.Mov = a.Aplica
                  AND doc.Movid = a.AplicaID
 LEFT JOIN Movtipo at ON at.Modulo = 'CXC'
                     AND at.Mov = a.Aplica
-LEFT JOIN cxc aplica ON aplica.Mov = a.Aplica
-                    AND aplica.MovID = a.AplicaID
 -- Campos Calculados
 CROSS APPLY ( SELECT
                 Mov = CASE 
@@ -91,7 +95,7 @@ CROSS APPLY ( SELECT
                 ModuloID = CASE 
                               WHEN ISNULL(t.Clave,'') = 'CXC.NC'
                             AND a.Mov = 'Saldos Cte' THEN
-                                aplica.ID
+                                doc.ID
                               ELSE
                                 a.ModuloID
                             END,
@@ -153,7 +157,8 @@ SELECT
   OrigenModulo = '',
   OrigenMov = '',
   OrigenMovID = '',
-  IVAFiscal = ISNULL(a.IVAFiscal,0)
+  IVAFiscal = ISNULL(a.IVAFiscal,0),
+  FactorRetencion =  ISNULL(a.FactorRetencion,0)
 FROM 
   CUP_v_CxcAuxiliarAnticipos a
 -- Campos Calculados
@@ -191,7 +196,13 @@ SELECT
   OrigenModulo =  '',
   OrigenMov = '',
   OrigenMovID = '',
-  IVAFiscal = ISNULL(doc.IVAFiscal,0)
+  IVAFiscal = ISNULL(doc.IVAFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(doc.IVAFiscal,0) <= 0 THEN
+                        0
+                      ELSE
+                        ISNULL(doc.Retencion,0) / ISNULL(doc.Impuestos,0)
+                    END
 FROM 
   Cxc c
 JOIN Cte ON Cte.Cliente = c.Cliente

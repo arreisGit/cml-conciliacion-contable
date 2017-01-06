@@ -49,7 +49,13 @@ SELECT
   AplicaMov   = aux.Aplica,
   AplicaMovId = aux.AplicaID,
   AplicaClave = t.Clave,
-  IVAFiscal = ISNULL(doc.IVAFiscal,0)
+  IVAFiscal = ISNULL(doc.IVAFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(doc.IVAFiscal,0) <= 0 THEN
+                        0
+                      ELSE
+                        ISNULL(doc.Retencion,0) / ISNULL(doc.Impuestos,0)
+                    END
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
@@ -92,7 +98,13 @@ SELECT
   AplicaMov =  c.Mov,
   AplicaMovID = c.MovID,
   AplicaClave = at.Clave,
-  IVAFiscal = ISNULL(c.IVAFiscal,0)
+  IVAFiscal = ISNULL(c.IVAFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(c.IVAFiscal,0) <= 0 THEN
+                        0
+                      ELSE
+                        ISNULL(c.Retencion,0) / ISNULL(c.Impuestos,0)
+                    END
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama
@@ -147,7 +159,13 @@ SELECT
   AplicaMov = c.Mov,
   AplicaMovID = c.MovID,
   AplicaClave = at.CLave,
-  IVAFiscal = ISNULL(c.IVAFiscal,0)
+  IVAFiscal = ISNULL(c.IVAFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(c.IVAFiscal,0) <= 0 THEN
+                        0
+                      ELSE
+                        ISNULL(c.Retencion,0) / ISNULL(c.Impuestos,0)
+                    END
 FROM 
   Auxiliar aux 
 JOIN Rama r ON r.Rama = aux.Rama

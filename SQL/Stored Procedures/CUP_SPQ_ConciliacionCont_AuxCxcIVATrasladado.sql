@@ -90,29 +90,39 @@ AS BEGIN
     aux.Ejercicio,
     aux.Periodo,
     aux.Fecha,
-    Cargo =  ROUND( ISNULL(aux.Cargo, 0)  * aux.IVAFiscal, 4, 1),
-    Abono = ROUND( ISNULL(aux.Abono, 0) * aux.IVAFiscal, 4, 1),
-    Neto = ROUND( aux.Neto * aux.IVAFiscal, 4, 1),
+    Cargo =  ROUND(  ISNULL(aux.Cargo, 0)
+                   * aux.IVAFiscal
+                   * aux.FactorRetencion, 4, 1),
+    Abono = ROUND( ISNULL(aux.Abono, 0)
+                  * aux.IVAFiscal
+                  * aux.FactorRetencion, 4, 1),
+    Neto = ROUND( aux.Neto 
+                * aux.IVAFiscal
+                * aux.FactorRetencion, 4, 1),
     CargoMN =  ROUND(
                       aux.Cargo
-                      * aux.IVAFiscal 
+                      * aux.IVAFiscal
+                      * aux.FactorRetencion 
                       * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                     , 4, 1),
     AbonoMN = ROUND( 
                        aux.Abono 
                      * aux.IVAFiscal
+                     * aux.FactorRetencion
                      * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                    , 4, 1),
     NetoMN = ROUND( 
                      aux.Neto
                     * aux.IVAFiscal
+                    * aux.FactorRetencion
                     * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                   , 4, 1),
     FluctuacionMN = 0,
     TotalMN = ROUND( 
                      aux.Neto
                    * aux.IVAFiscal
-                    * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
+                   * aux.FactorRetencion
+                   * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                   , 4, 1),
     aux.EsCancelacion,
     aux.Aplica,
@@ -246,7 +256,8 @@ AS BEGIN
                Abono = ISNULL(depositos.Abono, 0) 
                      * ISNULL(depositos.IVAFiscal, 0),
                Neto  = ISNULL(depositos.Neto, 0) 
-                     * ISNULL(depositos.IVAFiscal, 0)    
+                     * ISNULL(depositos.IVAFiscal, 0)
+                      
              ) calc
 
    
