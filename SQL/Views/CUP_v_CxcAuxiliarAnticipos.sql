@@ -51,7 +51,8 @@ SELECT
   AplicaClave = t.Clave,
   IVAFiscal = ISNULL(doc.IVAFiscal,0),
   FactorRetencion = CASE
-                      WHEN ISNULL(doc.IVAFiscal,0) <= 0 THEN
+                      WHEN ISNULL(doc.IVAFiscal,0) = 0 
+                        OR ISNULL(doc.Impuestos,0) = 0 THEN
                         0
                       ELSE
                         ISNULL(doc.Retencion,0) / ISNULL(doc.Impuestos,0)
@@ -100,7 +101,8 @@ SELECT
   AplicaClave = at.Clave,
   IVAFiscal = ISNULL(c.IVAFiscal,0),
   FactorRetencion = CASE
-                      WHEN ISNULL(c.IVAFiscal,0) <= 0 THEN
+                      WHEN ISNULL(c.IVAFiscal,0) = 0 
+                        OR ISNULL(c.Impuestos,0) = 0 THEN
                         0
                       ELSE
                         ISNULL(c.Retencion,0) / ISNULL(c.Impuestos,0)
@@ -161,7 +163,8 @@ SELECT
   AplicaClave = at.CLave,
   IVAFiscal = ISNULL(c.IVAFiscal,0),
   FactorRetencion = CASE
-                      WHEN ISNULL(c.IVAFiscal,0) <= 0 THEN
+                      WHEN ISNULL(c.IVAFiscal,0) = 0 
+                        OR ISNULL(c.Impuestos,0) = 0 THEN
                         0
                       ELSE
                         ISNULL(c.Retencion,0) / ISNULL(c.Impuestos,0)
