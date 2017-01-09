@@ -21,7 +21,7 @@ GO
   suficiente iformacion para poderlos cruzar 
   "lado a lado" con su póliza  contable.
                 
-  Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas_IVATrasladado  63527, 3, 2016, 10
+  Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas_IVATrasladado  63527, 4, 2016, 12
  ============================================= */
 
 
@@ -48,7 +48,7 @@ AS BEGIN
                 )
   )
 
-  IF @Tipo = 3 
+  IF @Tipo = 4
   BEGIN
   INSERT INTO @EstatusValidos
   ( 
