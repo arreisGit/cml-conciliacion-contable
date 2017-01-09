@@ -112,9 +112,7 @@ OUTER APPLY(SELECT
 -- CALC
 CROSS APPLY(
             SELECT
-              ImporteTotal =  ISNULL(m.Impuestos,0)
-                            - ISNULL(m.Retencion,0)
-                              
+              ImporteTotal =  ISNULL(m.Impuestos,0)         
             ) calc
 -- Excepciones Cuentas
 LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo

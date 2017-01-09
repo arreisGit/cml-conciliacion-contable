@@ -31,8 +31,7 @@ CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_OrigenContCxc_IVATrasladado
   @Ejercicio INT,
   @Periodo INT
 AS BEGIN 
-
-  SET NOCOUNT ON;
+ SET NOCOUNT ON;
 
   -- Tabla utilizada a modo de "workaround" 
   -- para poder simular el efecto de "EsCancelacion"
@@ -49,20 +48,17 @@ AS BEGIN
   )
   
 
-  IF @Tipo = 3 
-  BEGIN
-    INSERT INTO @EstatusValidos
-    ( 
-      Estatus,
-      EsCancelacion,
-      Factor 
-    )
-    VALUES 
-      ( 'CONCLUIDO', 0,  1 ),
-      ( 'PENDIENTE', 0,  1 ),
-      ( 'CANCELADO', 0,  1 ), 
-      ( 'CANCELADO', 1, -1 )
-  END
+  INSERT INTO @EstatusValidos
+  ( 
+    Estatus,
+    EsCancelacion,
+    Factor 
+  )
+  VALUES 
+    ( 'CONCLUIDO', 0,  1 ),
+    ( 'PENDIENTE', 0,  1 ),
+    ( 'CANCELADO', 0,  1 ), 
+    ( 'CANCELADO', 1, -1 )
 
   SELECT
     Empleado = @Empleado,
@@ -79,18 +75,17 @@ AS BEGIN
     Moneda = m.ClienteMoneda,
     TipoCambio  = m.ClienteTipoCambio,
     ImporteTotal = conversion_doc.ImporteTotal 
-                 * ISNULL(origenCont.Factor,1) 
+                 * ISNULL(origenCont.Factor,1)
+                 * ISNULL(m.IVAFiscal,0) 
                  * eV.Factor,
-    FluctuacionCambiariaMN = ROUND(
-                              ISNULL(fc.DiferenciaCambiaria,0)
-                            * eV.Factor 
-                        , 4, 1),
+    FluctuacionCambiariaMN = 0,
     ImporteTotalMN = ROUND(
                             (
                                ( conversion_doc.ImporteTotal * m.ClienteTipoCambio )
                              + ISNULL(fc.DiferenciaCambiaria,0) 
                             )
                             * ISNULL(origenCont.Factor,1)
+                            * ISNULL(m.IVAFiscal,0)
                             * eV.Factor 
                      , 4, 1),
     AuxiliarModulo = origenCont.AuxModulo,
@@ -99,6 +94,8 @@ AS BEGIN
   FROM 
     CUP_ConciliacionCont_Tipo_OrigenContable origenCont 
   JOIN Cxc m ON origenCont.Mov = m.Mov
+  JOIN Movtipo t ON t.Modulo = 'CXC'
+                AND t.Mov = m.Mov
   JOIN Cte ON Cte.Cliente = m.Cliente
   JOIN @EstatusValidos eV ON eV.Estatus = m.Estatus
   -- Factor Moneda Documento
@@ -107,6 +104,7 @@ AS BEGIN
                   ImporteTotal =  ROUND(  ( ISNULL(m.Importe,0) + ISNULL(m.Impuestos,0) - ISNULL(m.Retencion,0) )
                                         * (m.TipoCambio / m.ClienteTipoCambio), 4, 1)
               ) conversion_doc 
+  LEFT JOIN CtaDinero ON CtaDinero.CtaDinero = m.CtaDinero
   -- Fluctuacion Cambiaria
   OUTER APPLY(SELECT
                 DiferenciaCambiaria = SUM( ISNULL( dc.Diferencia_Cambiaria_MN, 0 ) )
@@ -166,12 +164,15 @@ AS BEGIN
   AND m.Estatus IN ('PENDIENTE','CANCELADO','CONCLUIDO')
   -- Filtro Excepciones cuenta
   AND eX.ID IS NULL
+  -- Cobros a Caja Chica no afectan el IVA TRASLADADO 
+  -- hasta el deposito.
+  AND NOT ( t.Clave = 'CXC.C' AND ISNULL(CtaDinero.Tipo,'') = 'Caja')
 
   UNION 
 
-  --  Une los movimientos que por su naturaleza es mas facil detectar el impacto 
-  --  a Clientes desde los auxiliares de CxC. Como es el caso 
-  --  de la Aplicaciones y Endosos donde se puede considerar su Neto.
+    --Une los movimientos que por su naturaleza es mas facil detectar el impacto 
+    --a Clientes desde los auxiliares de CxC. Como es el caso 
+    --de la Aplicaciones y Endosos donde se puede considerar su Neto.
 
   SELECT 
     Empleado = @Empleado,
@@ -289,4 +290,5 @@ AS BEGIN
     origenCont.AuxModulo,
     origenCont.AuxMov,
     pf.DID
+
 END

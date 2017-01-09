@@ -183,11 +183,11 @@ AS BEGIN
   OUTER APPLY (
                SELECT 
                 Cargo = ISNULL(aux.Cargo, 0)
-                      * ( aux.IVAFiscal * ( 1 - ISNULL(aux.FactorRetencion,0) ) ),
+                      * aux.IVAFiscal,
                 Abono = ISNULL(aux.Abono, 0)
-                      * ( aux.IVAFiscal * ( 1 - ISNULL(aux.FactorRetencion,0) ) ),
+                      * aux.IVAFiscal,
                 Neto  =  ISNULL(aux.Neto, 0)
-                      * ( aux.IVAFiscal * ( 1 - ISNULL(aux.FactorRetencion,0) ) )
+                      * aux.IVAFiscal  
               ) calc
   WHERE 
     aux.Ejercicio = @Ejercicio
