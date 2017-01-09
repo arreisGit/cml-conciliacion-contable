@@ -37,6 +37,17 @@ AS BEGIN
   IF @Modulo = 'CXC'	
   AND @Accion IN('VERIFICAR','AFECTAR','GENERAR')
   BEGIN
+    DECLARE
+      @Estatus VARCHAR(15),
+      @FechaEmision DATETIME
+
+    SELECT 
+      @Estatus = Estatus,
+      @FechaEmision = FechaEmision
+    FROM  
+      Cxc
+    WHERE 
+      ID = @ID
 	  
 	  IF @MovTipo = 'CXC.C'
 	  BEGIN
@@ -62,9 +73,22 @@ AS BEGIN
         SELECT @OK = 99946, @OKRef = 'No es posible afectar cobros con un tipo de cambio'
                                    + ' distinto al de su factura anticipo.' 
       END
+    END      
+    
+    IF @MovTipo = 'CXC.FA'
+    AND @Accion IN ('AFECTAR','GENERAR','VERIFICAR') 
+    BEGIN
+        
+      IF @Estatus = 'SINAFECTAR'
+      AND CAST(@FechaEmision AS DATE) <> CAST( GETDATE() AS DATE)
+      BEGIN
+        SELECT
+          @OK = 99946,
+          @OkRef = 'No es posible afectar facturas anticipo con una fecha emision distinta'
+                 + ' a la actual.'
+      END
 
-    END       
-
+    END
   END
   
   RETURN  
