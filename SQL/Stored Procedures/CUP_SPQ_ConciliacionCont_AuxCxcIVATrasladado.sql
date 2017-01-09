@@ -18,7 +18,7 @@ GO
 
   Description: Regresa el auxiliar del IVA Trasladado
 
-  Example: EXEC CUP_SPQ_ConciliacionCont_AuxCxcIVATrasladado 63527, 4, 2016, 10
+  Example: EXEC CUP_SPQ_ConciliacionCont_AuxCxcIVATrasladado 63527, 4, 2016, 12
 ============================================= */
 
 CREATE PROCEDURE dbo.CUP_SPQ_ConciliacionCont_AuxCxcIVATrasladado
@@ -90,38 +90,24 @@ AS BEGIN
     aux.Ejercicio,
     aux.Periodo,
     aux.Fecha,
-    Cargo =  ROUND(  ISNULL(aux.Cargo, 0)
-                   * aux.IVAFiscal
-                   * aux.FactorRetencion, 4, 1),
-    Abono = ROUND( ISNULL(aux.Abono, 0)
-                  * aux.IVAFiscal
-                  * aux.FactorRetencion, 4, 1),
-    Neto = ROUND( aux.Neto 
-                * aux.IVAFiscal
-                * aux.FactorRetencion, 4, 1),
+    Cargo = ROUND( ISNULL(calc.Cargo, 0) , 4, 1),
+    Abono = ROUND( ISNULL(calc.Abono, 0) , 4, 1),
+    Neto  = ROUND( ISNULL(calc.Neto,  0) , 4, 1),
     CargoMN =  ROUND(
-                      aux.Cargo
-                      * aux.IVAFiscal
-                      * aux.FactorRetencion 
+                        ISNULL(calc.Cargo, 0)
                       * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                     , 4, 1),
     AbonoMN = ROUND( 
-                       aux.Abono 
-                     * aux.IVAFiscal
-                     * aux.FactorRetencion
+                       ISNULL(calc.Abono, 0)
                      * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                    , 4, 1),
     NetoMN = ROUND( 
-                     aux.Neto
-                    * aux.IVAFiscal
-                    * aux.FactorRetencion
+                      ISNULL(calc.Neto, 0)
                     * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                   , 4, 1),
     FluctuacionMN = 0,
     TotalMN = ROUND( 
-                     aux.Neto
-                   * aux.IVAFiscal
-                   * aux.FactorRetencion
+                     ISNULL(calc.Neto, 0)
                    * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
                   , 4, 1),
     aux.EsCancelacion,
@@ -193,6 +179,16 @@ AS BEGIN
                AND first_aux.ModuloID = doc.ID
                ORDER BY 
                 first_aux.ID ASC ) primer_tc
+  -- CALCULADOS
+  OUTER APPLY (
+               SELECT 
+                Cargo = ISNULL(aux.Cargo, 0)
+                      * ( aux.IVAFiscal * ( 1 - ISNULL(aux.FactorRetencion,0) ) ),
+                Abono = ISNULL(aux.Abono, 0)
+                      * ( aux.IVAFiscal * ( 1 - ISNULL(aux.FactorRetencion,0) ) ),
+                Neto  =  ISNULL(aux.Neto, 0)
+                      * ( aux.IVAFiscal * ( 1 - ISNULL(aux.FactorRetencion,0) ) )
+              ) calc
   WHERE 
     aux.Ejercicio = @Ejercicio
   AND aux.Periodo = @Periodo
