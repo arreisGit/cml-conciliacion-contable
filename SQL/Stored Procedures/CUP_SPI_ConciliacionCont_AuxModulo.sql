@@ -64,7 +64,6 @@ AS BEGIN
 
   /* IVA TRASLADADO */
   IF @Tipo = 4 
-  AND 1 = 2
   BEGIN
     
     INSERT INTO CUP_ConciliacionCont_AuxModulo
