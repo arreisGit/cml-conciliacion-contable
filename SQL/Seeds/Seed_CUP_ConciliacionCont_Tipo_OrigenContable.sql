@@ -109,6 +109,7 @@ VALUES
   ( 3, 'CXC', 'Vta Activo Fijo CFD',  'VTAS',  'Vta Activo Fijo CFD',  1, 0, 0, NULL,  NULL),
   /* IVA Trasladado */
   ( 4, 'CXC', 'Ajuste',               'CXC',  'Ajuste',                1, 1, 0, NULL,  NULL),
+  ( 4, 'CXC', 'Aplicacion',           'CXC',  'Aplicacion',            1, 1, 0, NULL,  NULL),
   ( 4, 'CXC', 'Aplicacion Saldo',     'CXC',  'Aplicacion Saldo',     -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Cobro' ,               'CXC',  'Cobro',                -1, 0, 0, NULL,  NULL),
   ( 4, 'CXC', 'Cobro Anticipo',       'CXC',  'Cobro Anticipo',       -1, 0, 0, NULL,  NULL),
