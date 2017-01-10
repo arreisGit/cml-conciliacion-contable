@@ -21,7 +21,7 @@ GO
   y con la  suficiente iformacion para poderlos cruzar 
   "lado a lado" con su póliza  contable.
  
-  Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContCxc_IVATrasladado 63527, 4, 2016, 10
+  Example: EXEC CUP_SPQ_ConciliacionCont_OrigenContCxc_IVATrasladado 63527, 4, 2016, 12
  ============================================= */
 
 
@@ -188,16 +188,13 @@ AS BEGIN
     aux.EsCancelacion,
     aux.Moneda,
     aux.TipoCambio,
-    ImporteTotal = SUM(ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0)),
-    FluctuacionCambiariaMN = ROUND(
-                                  SUM( ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(fctorCanc.Factor,1))
-                                  ,4,1),
-    ImporteTotalMN = ROUND(
-                       SUM( 
-                            ( ( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) )  * aux.TipoCambio )
-                          + ( ISNULL(fc.Diferencia_Cambiaria_MN,0) * ISNULL(fctorCanc.Factor,1) ) 
-                          )
-                     , 4, 1),
+    ImporteTotal = SUM(ISNULL(calc.Neto,0)),
+    FluctuacionCambiariaMN = 0,
+    ImporteTotalMN = ROUND(SUM(
+                                 ISNULL(calc.Neto, 0)
+                               * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ClienteTipoCambio, aux.TipoCambio) ) )
+                               )
+                  , 4, 1),
     AuxiliarModulo = origenCont.AuxModulo,
     AuxiliaMov = origenCont.AuxMov,
     PolizaID  = pf.DID
@@ -205,8 +202,49 @@ AS BEGIN
     CUP_ConciliacionCont_Tipo_OrigenContable origenCont
   JOIN CUP_v_AuxiliarCxc aux ON aux.Modulo = origenCont.Modulo
                             AND aux.Mov    = origenCont.Mov
+  -- Excepciones Cuentas
+  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
+                                               AND ex.TipoExcepcion = 1
+                                               AND ex.Valor = aux.Cuenta
   JOIN Cte ON Cte.Cliente = aux.Cuenta
   JOIN Cxc m ON m.ID = aux.ModuloID
+  LEFT JOIN Cxc doc ON doc.Mov = aux.Aplica
+                  AND doc.MovId = aux.AplicaID
+  -- MovFlujo Origen
+  OUTER APPLY(
+                SELECT TOP 1
+                  mf.OModulo,
+                  mf.OID
+                FROM 
+                  MovFlujo mf 
+                WHERE 
+                  mf.DModulo = 'CXC'
+                AND mf.DID = doc.ID
+                AND mf.OModulo = doc.OrigenTipo
+                AND mf.OMov = doc.Origen
+                AND mf.OMovID = doc.OrigenID
+              ) mfOrigen
+   -- Datos del doc en Modulo Origen
+  OUTER APPLY ( SELECT TOP 1
+                  vta.TipoCambio
+                FROM 
+                  Venta vta
+                WHERE 
+                 'VTAS'    =  mfOrigen.OModulo 
+                AND vta.ID = mfOrigen.OID
+              ) movEnOrigen
+   -- Primer Tc
+   OUTER APPLY(SELECT TOP 1 
+                 first_aux.TipoCambio
+               FROM 
+                 Auxiliar first_aux 
+               JOIN Rama fr ON fr.Rama = first_aux.Rama 
+               WHERE 
+                 fr.Mayor = 'CXC'
+               AND first_aux.Modulo = 'CXC'
+               AND first_aux.ModuloID = doc.ID
+               ORDER BY 
+                first_aux.ID ASC ) primer_tc
   -- Factor Canceclacion
   CROSS APPLY(SELECT
                Factor  = CASE ISNULL(aux.EsCancelacion,0) 
@@ -215,6 +253,7 @@ AS BEGIN
                            ELSE 
                               1
                           END) fctorCanc 
+
   -- Fluctuacion Cambiaria
   LEFT JOIN CUP_v_CxDiferenciasCambiarias fc ON fc.Modulo = aux.Modulo
                                             AND fc.ModuloID = aux.ModuloId
@@ -225,10 +264,17 @@ AS BEGIN
                 SELECT
                   Nombre = ISNULL(REPLACE(REPLACE(REPLACE(Cte.Nombre,CHAR(13),''),CHAR(10),''),CHAR(9),''),'')
               ) cf
-  -- Excepciones Cuentas
-  LEFT JOIN CUP_ConciliacionCont_Excepciones eX ON ex.TipoConciliacion = @Tipo
-                                               AND ex.TipoExcepcion = 1
-                                               AND ex.Valor = aux.Cuenta
+
+  -- CALCULADOS
+  OUTER APPLY (
+               SELECT 
+                Cargo = ISNULL(aux.Cargo, 0)
+                      * aux.IVAFiscal,
+                Abono = ISNULL(aux.Abono, 0)
+                      * aux.IVAFiscal,
+                Neto  =  ISNULL(aux.Neto, 0)
+                      * aux.IVAFiscal  
+              ) calc
   -- Poliza Contable
   OUTER APPLY( 
                SELECT TOP 1
