@@ -129,20 +129,20 @@ AS BEGIN
                AND mf.OModulo = origenCont.Modulo
                AND mf.OID = m.ID               
                AND ( 
-                      (   
-                          m.Estatus = 'CANCELADO'
-                      AND (
-                             (
-                                eV.EsCancelacion = 1 
-                             AND mf.DID = m.ContID
-                             )
-                          OR (
-                                eV.EsCancelacion = 0
-                             AND mf.DID < m.ContID
-                             )
-                          )
-                      )
-                  OR  (
+                        (   
+                            m.Estatus = 'CANCELADO'
+                        AND (
+                               (
+                                  eV.EsCancelacion = 1 
+                               AND mf.DID = m.ContID
+                               )
+                            OR (
+                                  eV.EsCancelacion = 0
+                               AND mf.DID < m.ContID
+                               )
+                            )
+                        )
+                    OR  (
                         m.Estatus <> 'CANCELADO'
                       AND mf.DID = m.ContID
                       )
@@ -170,9 +170,9 @@ AS BEGIN
 
   UNION 
 
-    --Une los movimientos que por su naturaleza es mas facil detectar el impacto 
-    --a Clientes desde los auxiliares de CxC. Como es el caso 
-    --de la Aplicaciones y Endosos donde se puede considerar su Neto.
+  --Une los movimientos que por su naturaleza es mas facil detectar el impacto 
+  --a Clientes desde los auxiliares de CxC. Como es el caso 
+  --de la Aplicaciones y Endosos donde se puede considerar su Neto.
 
   SELECT 
     Empleado = @Empleado,
