@@ -114,13 +114,7 @@ CROSS APPLY ( SELECT
                                 ELSE
                                   a.AplicaID
                               END, 
-                IVAFiscal = CASE
-                              WHEN ISNULL(at.Clave,'') = 'CXC.NC'
-                                AND a.Aplica = 'Saldos Cte' THEN
-                                   16.0/116.0
-                                ELSE
-                                  ISNULL(doc.IVAFiscal,0)
-                              END,
+                IVAFiscal = ISNULL(doc.IVAFiscal,0),
                 Neto = ISNULL(a.Cargo,0) - ISNULL( a.Abono,0)
             ) Calc
 WHERE 
