@@ -101,8 +101,9 @@ AS BEGIN
   -- Factor Moneda Documento
   CROSS APPLY( SELECT   
                   FactorTC =   m.TipoCambio / m.ClienteTipoCambio,
-                  ImporteTotal =  ROUND(  ( ISNULL(m.Importe,0) + ISNULL(m.Impuestos,0) - ISNULL(m.Retencion,0) )
-                                        * (m.TipoCambio / m.ClienteTipoCambio), 4, 1)
+                  ImporteTotal =  ROUND (
+                                          ISNULL(m.Impuestos,0) * (m.TipoCambio / m.ClienteTipoCambio), 
+                                         4, 1)
               ) conversion_doc 
   LEFT JOIN CtaDinero ON CtaDinero.CtaDinero = m.CtaDinero
   -- Fluctuacion Cambiaria
@@ -210,6 +211,7 @@ AS BEGIN
   JOIN Cxc m ON m.ID = aux.ModuloID
   LEFT JOIN Cxc doc ON doc.Mov = aux.Aplica
                   AND doc.MovId = aux.AplicaID
+  LEFT JOIN CtaDinero ON CtaDinero.CtaDinero = m.CtaDinero
   -- MovFlujo Origen
   OUTER APPLY(
                 SELECT TOP 1
@@ -320,6 +322,8 @@ AS BEGIN
       )
   -- Filtro Excepciones cuenta
   AND eX.ID IS NULL
+  -- No considera Cobros a caja chica.
+  AND NOT ( aux.MovClave = 'CXC.C' AND CtaDinero.Tipo = 'Caja')
   GROUP BY 
     origenCont.Modulo,
     aux.ModuloID,
