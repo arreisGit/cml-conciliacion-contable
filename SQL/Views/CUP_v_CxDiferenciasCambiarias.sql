@@ -52,7 +52,9 @@ SELECT -- Cobros CXC
   Diferencia_Cambiaria_TCOrigen_MN = ROUND((  
                                             ISNULL(importes_calculo.ImporteMNTCAplica,0)
                                           - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
-                                          ) * dt.Factor,4,1)
+                                          ) * dt.Factor,4,1),
+  doc.IVAFiscal
+
 FROM
   Cxc c 
 JOIN Movtipo t ON t.Modulo = 'CXC'
@@ -182,7 +184,8 @@ SELECT
   Diferencia_Cambiaria_TCOrigen_MN = ROUND((  
                                             ISNULL(importes_calculo.ImporteMNTCAplica,0)
                                           - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
-                                          ) * mt.Factor,4,1)
+                                          ) * mt.Factor,4,1),
+  doc.IVAFiscal
 FROM
   Cxc c 
 JOIN Movtipo t ON t.Modulo = 'CXC'
@@ -310,7 +313,8 @@ SELECT
   Diferencia_Cambiaria_TCOrigen_MN = ROUND((  
                                             ISNULL(importes_calculo.ImporteMNTCAplica,0)
                                           - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
-                                          ) * mt.Factor,4,1)
+                                          ) * mt.Factor,4,1),
+  doc.IVAFiscal
 FROM
   Venta v 
 JOIN Movtipo t ON t.Modulo = 'VTAS'
@@ -408,7 +412,8 @@ SELECT
   Diferencia_Cambiaria_TCOrigen_MN = ROUND((  
                                             ISNULL(importes_calculo.ImporteMNTCAplica,0)
                                           - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
-                                          ) * mt.Factor,4,1)
+                                          ) * mt.Factor,4,1),
+  doc.IVAFiscal
 FROM
   Cxc c 
 JOIN Movtipo t ON t.Modulo = 'CXC'
@@ -503,7 +508,8 @@ SELECT
                           ISNULL(calc.ImporteMNTCAplica,0)
                         - ISNULL(calc.ImporteMNTCRev,0)
                        ) * calc.FactorDiff,4,1),
-  Diferencia_Cambiaria_TCOrigen_MN = NULL
+  Diferencia_Cambiaria_TCOrigen_MN = NULL,
+  doc.IVAFiscal
 FROM
   Cxp p 
 JOIN Movtipo t ON t.Modulo = 'CXP'
@@ -610,7 +616,8 @@ SELECT
                         ISNULL(importes_calculo.ImporteMNTCAplica,0)
                       - ISNULL(importes_calculo.ImporteMNTCRev,0)
                         ) * 1,4,1),
-  Diferencia_Cambiaria_TCOrigen_MN = NULL
+  Diferencia_Cambiaria_TCOrigen_MN = NULL,
+  doc.IVAFiscal
 FROM
   CXP p
 JOIN Movtipo t ON t.Modulo = 'CXP'
