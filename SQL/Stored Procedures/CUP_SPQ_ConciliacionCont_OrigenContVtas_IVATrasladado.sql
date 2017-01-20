@@ -88,7 +88,7 @@ SELECT
                           * ISNULL(origenCont.Factor,1) 
                           * eV.Factor
                           )
-                        --+ ISNULL(fc.DiferenciaCambiaria,0)
+                        + ISNULL(fc.DiferenciaCambiaria,0)
                     , 4, 1),
 
   AuxiliarModulo = origenCont.AuxModulo,
@@ -101,7 +101,11 @@ JOIN Cte ON Cte.Cliente = m.Cliente
 JOIN @EstatusValidos eV ON eV.Estatus = m.Estatus
 -- Fluctuacion Cambiaria
 OUTER APPLY(SELECT
-              DiferenciaCambiaria = SUM( ISNULL( dc.Diferencia_Cambiaria_MN, 0 ) )
+              DiferenciaCambiaria = SUM
+                                    ( 
+                                       ISNULL( dc.Diferencia_Cambiaria_MN, 0)
+                                     * ISNULL(dc.IVAFiscal,0) 
+                                    )
                                   * ISNULL( origenCont.Factor, 1 )
                                   * ev.Factor
             FROM 
