@@ -85,7 +85,6 @@ AS BEGIN
                              + ISNULL(fc.DiferenciaCambiaria,0) 
                             )
                             * ISNULL(origenCont.Factor,1)
-                            * ISNULL(m.IVAFiscal,0)
                             * eV.Factor 
                      , 4, 1),
     AuxiliarModulo = origenCont.AuxModulo,
@@ -102,7 +101,8 @@ AS BEGIN
   CROSS APPLY( SELECT   
                   FactorTC =   m.TipoCambio / m.ClienteTipoCambio,
                   ImporteTotal =  ROUND (
-                                          ISNULL(m.Impuestos,0) * (m.TipoCambio / m.ClienteTipoCambio), 
+                                          ISNULL(m.Impuestos,0) 
+                                          * (m.TipoCambio / m.ClienteTipoCambio), 
                                          4, 1)
               ) conversion_doc 
   LEFT JOIN CtaDinero ON CtaDinero.CtaDinero = m.CtaDinero
