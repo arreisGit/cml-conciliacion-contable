@@ -46,7 +46,11 @@ SELECT DISTINCT
   IVAFiscal = ( 16.0 / 116.0 ),--solDev.IVAFiscal,
   CorteID = corte.ID,
   CorteMov = corte.Mov,
-  CorteMovID = corte.MoviD
+  CorteMovID = corte.MoviD,
+  dep.ContID,
+  dep.OrigenTipo,
+  dep.Origen,
+  dep.OrigenID
 FROM
   Dinero dep 
 JOIN DineroD depD ON depD.ID = dep.ID

@@ -72,6 +72,9 @@ AS BEGIN
     INSERT INTO CUP_ConciliacionCont_AuxModulo
     EXEC CUP_SPQ_ConciliacionCont_OrigenContVtas_IVATrasladado @Empleado, @Tipo, @Ejercicio, @Periodo
 
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContDin_IVATrasladado @Empleado, @Tipo, @Ejercicio, @Periodo
+
   END 
 
 END
