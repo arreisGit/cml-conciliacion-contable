@@ -188,12 +188,11 @@ AS BEGIN
     aux.TipoCambio,
     ImporteTotal = SUM(ISNULL(calc.Neto,0)),
     FluctuacionCambiariaMN = 0,
-    ImporteTotalMN = ROUND(
-                       SUM( 
-                            ( ( ISNULL(aux.Cargo,0) - ISNULL(aux.Abono,0) )  * aux.TipoCambio )
-                          + ( ISNULL(fc.Diferencia_Cambiaria_MN,0) * -1 ) 
-                          )
-                     , 4, 1),
+    ImporteTotalMN = ROUND(SUM(
+                                ISNULL(calc.Neto, 0)
+                              * ISNULL( movEnOrigen.TipoCambio, ISNULL( primer_tc.TipoCambio, ISNULL(doc.ProveedorTipoCambio, aux.TipoCambio) ) )
+                              )
+                           , 4, 1),
     AuxiliarModulo = origenCont.AuxModulo,
     AuxiliaMov = origenCont.AuxMov,
     PolizaID  = pf.DID
