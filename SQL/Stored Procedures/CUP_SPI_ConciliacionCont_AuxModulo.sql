@@ -16,6 +16,10 @@ GO
   Created by:    Enrique Sierra Gtez
   Creation Date: 2016-10-24
 
+  Description: Procedimiento encargado de hacer el llamado
+  individual a los procesos que llenan el auxiliar del modulo
+  en la herramienta de conciliacion contable.
+
   Example: EXEC CUP_SPI_ConciliacionCont_AuxModulo 63527, 1, 2016, 9
  ============================================= */
 
@@ -31,11 +35,9 @@ AS BEGIN
 
   DELETE CUP_ConciliacionCont_AuxModulo
   WHERE Empleado = @Empleado
- 
-  IF @Tipo IN (
-                1 -- Saldo Proveedores
-               --,2  -- IVA X Acreeditar
-               ) 
+
+  -- Saldo Proveedores
+  IF @Tipo = 1
   BEGIN
     
     INSERT INTO CUP_ConciliacionCont_AuxModulo
@@ -48,9 +50,23 @@ AS BEGIN
     EXEC CUP_SPQ_ConciliacionCont_OrigenContGas @Empleado, @Tipo, @Ejercicio, @Periodo
 
   END
- 
 
-  /* Saldo Clientes */
+  -- IVA Por Acreditar
+  IF @Tipo = 2
+  BEGIN
+    
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContCxp_IVAPorAcreditar @Empleado, @Tipo, @Ejercicio, @Periodo
+
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContCOMS_IVAPorAcreditar @Empleado, @Tipo, @Ejercicio, @Periodo
+
+    INSERT INTO CUP_ConciliacionCont_AuxModulo
+    EXEC CUP_SPQ_ConciliacionCont_OrigenContGas_IVAPorAcreditar @Empleado, @Tipo, @Ejercicio, @Periodo
+
+  END
+ 
+  -- Saldo Clientes
   IF @Tipo = 3 
   BEGIN
     
@@ -62,7 +78,7 @@ AS BEGIN
 
   END 
 
-  /* IVA TRASLADADO */
+  -- IVA TRASLADADO
   IF @Tipo = 4 
   BEGIN
     
