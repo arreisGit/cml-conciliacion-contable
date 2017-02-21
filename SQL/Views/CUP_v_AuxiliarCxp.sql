@@ -51,7 +51,14 @@ SELECT
   OrigenModulo = ISNULL(p.OrigenTipo,''),
   OrigenMov = ISNULL(p.Origen,''),
   OrigenMovID = ISNULL(p.OrigenID,''),
-  IVAFiscal =  ISNULL(doc.IVAFiscal,0)
+  IVAFiscal = ISNULL(calc.IVAFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(doc.IVAFiscal,0) = 0 
+                        OR ISNULL(doc.Impuestos,0) = 0 THEN
+                        0
+                      ELSE
+                        ISNULL(doc.Retencion,0) / ISNULL(doc.Impuestos,0)
+                    END
 FROM
   Auxiliar a 
 JOIN Rama r ON r.Rama = a.Rama
@@ -75,7 +82,8 @@ CROSS APPLY(SELECT
                         END) fctorCanc 
 -- Campos Calculados
 CROSS APPLY ( SELECT   
-                Neto = ISNULL(a.Cargo,0) - ISNULL( a.Abono,0)
+                Neto = ISNULL(a.Cargo,0) - ISNULL( a.Abono, 0 ),
+                IVAFiscal = ISNULL(doc.IVAFiscal,0)
             ) Calc
 WHERE
   r.Mayor = 'CXP'
@@ -113,7 +121,14 @@ SELECT
   OrigenModulo =  '',
   OrigenMov = '',
   OrigenMovID = '',
-  IVAFiscal  = ISNULL(doc.IvaFiscal,0)
+  IVAFiscal  = ISNULL(doc.IvaFiscal,0),
+  FactorRetencion = CASE
+                      WHEN ISNULL(doc.IVAFiscal,0) = 0 
+                        OR ISNULL(doc.Impuestos,0) = 0 THEN
+                        0
+                      ELSE
+                        ISNULL(doc.Retencion,0) / ISNULL(doc.Impuestos,0)
+                    END
 FROM 
   Cxp p
 JOIN Prov ON prov.Proveedor = p.Proveedor
