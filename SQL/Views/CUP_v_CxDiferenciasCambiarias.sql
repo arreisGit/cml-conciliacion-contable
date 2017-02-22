@@ -53,8 +53,7 @@ SELECT -- Cobros CXC
                                             ISNULL(importes_calculo.ImporteMNTCAplica,0)
                                           - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
                                           ) * dt.Factor,4,1),
-  doc.IVAFiscal
-
+  importes_calculo.IVAFiscal
 FROM
   Cxc c 
 JOIN Movtipo t ON t.Modulo = 'CXC'
@@ -143,7 +142,14 @@ CROSS APPLY(
             SELECT
               ImporteMNTCOrigen = ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioOrigen,4,1),
               ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioRev,4,1),
-              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.ClienteTipoCambio,4,1)
+              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.ClienteTipoCambio,4,1),
+              IVAFiscal = CASE
+                            WHEN ISNULL(dt.Clave,'') = 'CXC.NC'
+                              AND dt.Mov = 'Saldos Cte' THEN
+                                0.137931034482759 -- Factor de 16/116
+                            ELSE
+                              ISNULL(doc.IVAFiscal,0)
+                           END
             ) importes_calculo
 
 WHERE 
@@ -185,7 +191,7 @@ SELECT
                                             ISNULL(importes_calculo.ImporteMNTCAplica,0)
                                           - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
                                           ) * mt.Factor,4,1),
-  doc.IVAFiscal
+  importes_calculo.IVAFiscal
 FROM
   Cxc c 
 JOIN Movtipo t ON t.Modulo = 'CXC'
@@ -275,7 +281,14 @@ CROSS APPLY(
             SELECT
               ImporteMNTCOrigen = ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioOrigen,4,1),
               ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioRev,4,1),
-              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.TipoCambio,4,1)
+              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  c.TipoCambio,4,1),
+              IVAFiscal = CASE
+                            WHEN ISNULL(mt.Clave,'') = 'CXC.NC'
+                              AND mt.Mov = 'Saldos Cte' THEN
+                                0.137931034482759 -- Factor de 16/116
+                            ELSE
+                              ISNULL(doc.IVAFiscal,0)
+                           END
             ) importes_calculo
 WHERE 
    c.Estatus IN ('CONCLUIDO','CANCELADO')
