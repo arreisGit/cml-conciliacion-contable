@@ -211,7 +211,7 @@ AS BEGIN
     ImporteFinalTotalMN  =  SUM( ISNULL(calc.ImporteFinalConversionMN,0) + ISNULL(calc.ImporteFinalMN,0))                          
   FROM 
     @AntSaldosCxCorte aux
-  LEFT JOIN MovTipo t ON t.Modulo = 'CXP'
+  LEFT JOIN MovTipo t ON t.Modulo = 'CXC'
                       AND t.Mov = aux.Mov
   LEFT JOIN Cxc doc ON doc.Mov = aux.Mov
                    AND doc.MovId = aux.MovID
