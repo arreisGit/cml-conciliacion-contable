@@ -497,18 +497,26 @@ SELECT
   DocumentoTipo = dt.Clave,
   Moneda = p.ProveedorMoneda,
   Importe = importe_aplica.Importe,
-  TipoCambioOriginal = NULL,
-  TipoCambioReevaluado  = tcRev.TipoCambio,
+  TipoCambioOriginal = tc_calc.TipoCambioOrigen,
+  TipoCambioReevaluado  = tc_calc.TipoCambioRev,
   TipoCambioPago  = p.ProveedorTipoCambio,
-  ImporteMN_TC_Origen = NULL,
-  ImporteMN_TC_Rev = calc.ImporteMNTCRev,
-  ImporteMN_TC_Pago = calc.ImporteMNTCAplica,
+  ImporteMN_TC_Origen = importes_calculo.ImporteMNTCOrigen,
+  ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
+  ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = -1,
   DiferenciaMN = ROUND((  
-                          ISNULL(calc.ImporteMNTCAplica,0)
-                        - ISNULL(calc.ImporteMNTCRev,0)
+                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                        - ISNULL(importes_calculo.ImporteMNTCRev,0)
                        ) * calc.FactorDiff,4,1),
-  Diferencia_Cambiaria_TCOrigen_MN = NULL,
+  Diferencia_Cambiaria_TCOrigen_MN = ROUND
+                                    (
+                                        (  
+                                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                                        - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                                        ) 
+                                      * calc.FactorDiff,
+                                      4, 1
+                                   ),
   doc.IVAFiscal
 FROM
   Cxp p 
@@ -519,33 +527,59 @@ JOIN Movtipo dt ON dt.Modulo = 'CXP'
                 AND dt.Mov = d.Aplica
 JOIN Cxp doc ON doc.Mov = d.Aplica
                AND doc.Movid = d.AplicaID
+-- MovFlujo Origen
+OUTER APPLY(
+              SELECT TOP 1
+                mf.OModulo,
+                mf.OID
+              FROM 
+                MovFlujo mf 
+              WHERE 
+                mf.DModulo = 'CXC'
+              AND mf.DID = doc.ID
+              AND mf.OModulo = doc.OrigenTipo
+              AND mf.OMov = doc.Origen
+              AND mf.OMovID = doc.OrigenID
+            ) mfOrigen
+-- Primer Tc
+OUTER APPLY(
+            SELECT TOP 1 
+                first_aux.TipoCambio
+            FROM 
+              Auxiliar first_aux 
+            JOIN Rama fr ON fr.Rama = first_aux.Rama 
+            WHERE 
+              fr.Mayor = 'CXP'
+            AND first_aux.Modulo = 'CXP'
+            AND first_aux.ModuloID = doc.ID
+            ORDER BY 
+              first_aux.ID ASC
+           ) primer_tc           
 -- Importe Aplica 
 CROSS APPLY( SELECT   
                 FactorTC =   ROUND((p.TipoCambio / p.ProveedorTipoCambio),4,1),
                 Importe =  ROUND(d.Importe * (p.TipoCambio / p.ProveedorTipoCambio),4,1)
             ) importe_aplica 
--- Origen 
+-- Datos del doc en Modulo Origen
 OUTER APPLY(
             SELECT TOP 1
-              c.FechaEmision, 
-              c.TipoCambio
+              coms.FechaEmision, 
+              coms.TipoCambio
             FROM 
-              Compra c 
+              Compra coms 
             WHERE 
-              'COMS' = doc.OrigenTipo
-            AND c.Mov = doc.Origen
-            AND c.MovID = doc.OrigenID
-            UNION 
+               'COMS'   = mfOrigen.OModulo 
+            AND coms.ID = mfOrigen.OID
+            UNION
             SELECT TOP 1
-              g.FechaEmision, 
-              g.TipoCambio
+              gas.FechaEmision, 
+              gas.TipoCambio
             FROM 
-              Gasto g 
+              Gasto gas 
             WHERE 
-              'GAS' = doc.OrigenTipo
-            AND g.Mov = doc.Origen
-            AND g.MovID = doc.OrigenID
-            ) origen
+               'GAS'   = mfOrigen.OModulo 
+            AND gas.ID = mfOrigen.OID
+            ) movEnOrigen
 -- Ultima Rev
 OUTER APPLY ( SELECT TOP 1  
                 ur.ID ,
@@ -563,11 +597,28 @@ OUTER APPLY ( SELECT TOP 1
               AND urD.AplicaID = d.AplicaID
               ORDER BY 
                 ur.ID DESC ) ultRev
--- Tipo de Cambio Historico
+-- Tipos de Cambio Origen y el Ultimo Reevaluado.
 OUTER APPLY(
             SELECT 
-              TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
-            ) tcRev
+              TipoCambioOrigen = ISNULL
+                                (
+                                  movEnOrigen.TipoCambio,
+                                  ISNULL
+                                  (
+                                    primer_tc.TipoCambio,
+                                    doc.ProveedorTipoCambio
+                                  )
+                                ),
+              TipoCambioRev = ISNULL
+                              (
+                                ultRev.TipoCambio,
+                                ISNULL
+                                (
+                                  movEnOrigen.TipoCambio,
+                                  doc.TipoCambio
+                                )
+                              )
+            ) tc_Calc
 -- Campos Calculados
 CROSS APPLY( 
             SELECT
@@ -576,10 +627,15 @@ CROSS APPLY(
                               1
                             ELSE 
                               -1
-                           END,
-              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
-              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
+                           END  
             ) calc
+-- Importes MN para el calculo
+CROSS APPLY( 
+            SELECT
+              ImporteMNTCOrigen = ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioOrigen,4,1),
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioRev,4,1),
+              ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.TipoCambio,4,1)
+            ) importes_calculo
 WHERE 
     p.Estatus IN ('CONCLUIDO','CANCELADO')
 AND p.ProveedorMoneda <> 'Pesos'
@@ -605,18 +661,21 @@ SELECT
   DocumentoTipo = mt.Clave,
   Moneda = p.Moneda,
   Importe         = importe_aplica.Importe,
-  TipoCambioOriginal = NULL,
-  TipoCambioReevaluado  = tcRev.TipoCambio,
+  TipoCambioOriginal = tc_calc.TipoCambioOrigen,
+  TipoCambioReevaluado  = tc_calc.TipoCambioRev,
   TipoCambioPago  = p.TipoCambio,
-  ImporteMN_TC_Origen = NULL,
+  ImporteMN_TC_Origen = importes_calculo.ImporteMNTCOrigen,
   ImporteMN_al_TC_Rev = importes_calculo.ImporteMNTCRev,
   ImporteMN_al_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = 1,
-  DiferenciaMN = ROUND((  
+  DiferenciaMN = ROUND(  
                         ISNULL(importes_calculo.ImporteMNTCAplica,0)
                       - ISNULL(importes_calculo.ImporteMNTCRev,0)
-                        ) * 1,4,1),
-  Diferencia_Cambiaria_TCOrigen_MN = NULL,
+                      , 4, 1),
+  Diferencia_Cambiaria_TCOrigen_MN= ROUND(  
+                                            ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                                          - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                                          , 4, 1),
   doc.IVAFiscal
 FROM
   CXP p
@@ -626,35 +685,65 @@ JOIN CXP doc ON doc.Mov = p.MovAplica
             AND doc.Movid = p.MovAplicaID
 JOIN Movtipo mt ON mt.Modulo = 'CXP'
                 AND mt.Mov = p.MovAplica
+-- MovFlujo Origen
+OUTER APPLY(
+              SELECT TOP 1
+                mf.OModulo,
+                mf.OID
+              FROM 
+                MovFlujo mf 
+              WHERE 
+                mf.DModulo = 'CXC'
+              AND mf.DID = doc.ID
+              AND mf.OModulo = doc.OrigenTipo
+              AND mf.OMov = doc.Origen
+              AND mf.OMovID = doc.OrigenID
+            ) mfOrigen
+-- Primer Tc
+OUTER APPLY(
+            SELECT TOP 1 
+                first_aux.TipoCambio
+            FROM 
+              Auxiliar first_aux 
+            JOIN Rama fr ON fr.Rama = first_aux.Rama 
+            WHERE 
+              fr.Mayor = 'CXP'
+            AND first_aux.Modulo = 'CXP'
+            AND first_aux.ModuloID = doc.ID
+            ORDER BY 
+              first_aux.ID ASC
+           ) primer_tc   
 -- Importe Aplica 
 CROSS APPLY( SELECT   
                 FactorTC =   1,
-                Importe =  ROUND(ISNULL(p.Importe,0) 
-                                + ISNULL(p.Impuestos,0) 
-                                - ISNULL(p.Retencion,0),4,1)
+                Importe =  ROUND
+                           (
+                              ISNULL(p.Importe,0) 
+                            + ISNULL(p.Impuestos,0) 
+                            - ISNULL(p.Retencion,0)
+                           ,4,1)
             ) importe_aplica 
--- Origen 
+-- Datos del doc en Modulo Origen
 OUTER APPLY(
             SELECT TOP 1
-              c.FechaEmision, 
-              c.TipoCambio
+              coms.FechaEmision, 
+              coms.TipoCambio
             FROM 
-              Compra c 
+              Compra coms 
             WHERE 
-              'COMS' = doc.OrigenTipo
-            AND c.Mov = doc.Origen
-            AND c.MovID = doc.OrigenID
-            UNION 
+               'COMS'   = mfOrigen.OModulo 
+            AND coms.ID = mfOrigen.OID
+            UNION
             SELECT TOP 1
-              g.FechaEmision, 
-              g.TipoCambio
+              gas.FechaEmision, 
+              gas.TipoCambio
             FROM 
-              Gasto g 
+              Gasto gas 
             WHERE 
-              'GAS' = doc.OrigenTipo
-            AND g.Mov = doc.Origen
-            AND g.MovID = doc.OrigenID
-            ) origen-- Ultima Rev
+               'GAS'   = mfOrigen.OModulo 
+            AND gas.ID = mfOrigen.OID
+            ) movEnOrigen
+-- Ultima Rev
 OUTER APPLY ( SELECT TOP 1  
                 ur.ID ,
                 TipoCambio = ur.ProveedorTipoCambio
@@ -671,15 +760,33 @@ OUTER APPLY ( SELECT TOP 1
               AND urD.AplicaID = p.MovAplicaID
               ORDER BY 
                 ur.ID DESC ) ultRev
--- Tipo de Cambio Historico
+-- Tipos de Cambio Origen y el Ultimo Reevaluado.
 OUTER APPLY(
-            SELECT 
-              TipoCambio = ISNULL(ultRev.TipoCambio,ISNULL(origen.TipoCambio,doc.TipoCambio))
-            ) tcRev
+            SELECT              
+              TipoCambioOrigen = ISNULL
+                                (
+                                  movEnOrigen.TipoCambio,
+                                  ISNULL
+                                  (
+                                    primer_tc.TipoCambio,
+                                    doc.ProveedorTipoCambio
+                                  )
+                                ),
+              TipoCambioRev = ISNULL
+                              (
+                                ultRev.TipoCambio,
+                                ISNULL
+                                (
+                                  movEnOrigen.TipoCambio,
+                                  doc.TipoCambio
+                                )
+                              )
+            ) tc_Calc
 -- Importes MN para el calculo
 CROSS APPLY( 
             SELECT
-              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tcRev.TipoCambio,4,1),
+              ImporteMNTCOrigen = ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioOrigen,4,1),
+              ImporteMNTCRev =  ROUND(ISNULL(importe_aplica.Importe,0) *  tc_Calc.TipoCambioRev,4,1),
               ImporteMNTCAplica =  ROUND(ISNULL(importe_aplica.Importe,0) *  p.ProveedorTipoCambio,4,1)
             ) importes_calculo
 WHERE 
@@ -687,4 +794,3 @@ WHERE
 AND p.Moneda <> 'Pesos'
 AND t.clave IN ('CXP.P','CXP.ANC')
 AND ISNULL(p.Importe,0) <> 0
- 
