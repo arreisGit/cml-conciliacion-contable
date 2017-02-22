@@ -201,14 +201,14 @@ AS BEGIN
   SELECT 
     @Ejercicio,
     @Periodo,
-    ImporteInicialDlls = SUM(ISNULL(calc.ImporteInicialDlls,0)),
-    ImporteInicialConversionMN = SUM(ISNULL(calc.ImporteInicialConversionMN,0)),
-    ImporteInicialMN = SUM(ISNULL(calc.ImporteInicialMN,0)),
-    ImporteInicialTotalMN  =  SUM( ISNULL(calc.ImporteInicialConversionMN,0) + ISNULL(calc.ImporteInicialMN,0)),
-    ImporteFinalDlls = SUM(ISNULL(calc.ImporteFinalDlls,0)),
-    ImporteFinalConversionMN = SUM(ISNULL(calc.ImporteFinalConversionMN,0)),
-    ImporteFinalMN = SUM(ISNULL(calc.ImporteFinalMN,0)),
-    ImporteFinalTotalMN  =  SUM( ISNULL(calc.ImporteFinalConversionMN,0) + ISNULL(calc.ImporteFinalMN,0))                          
+    ImporteInicialDlls = ISNULL(SUM(ISNULL(calc.ImporteInicialDlls,0)),0),
+    ImporteInicialConversionMN = ISNULL(SUM(ISNULL(calc.ImporteInicialConversionMN,0)),0),
+    ImporteInicialMN = ISNULL(SUM(ISNULL(calc.ImporteInicialMN,0)),0),
+    ImporteInicialTotalMN  =  ISNULL(SUM( ISNULL(calc.ImporteInicialConversionMN,0) + ISNULL(calc.ImporteInicialMN,0)),0),
+    ImporteFinalDlls = ISNULL(SUM(ISNULL(calc.ImporteFinalDlls,0)),0),
+    ImporteFinalConversionMN = ISNULL(SUM(ISNULL(calc.ImporteFinalConversionMN,0)),0),
+    ImporteFinalMN = ISNULL(SUM(ISNULL(calc.ImporteFinalMN,0)),0),
+    ImporteFinalTotalMN  =  ISNULL(SUM( ISNULL(calc.ImporteFinalConversionMN,0) + ISNULL(calc.ImporteFinalMN,0)),0)
   FROM 
     @AntSaldosCxCorte aux
   LEFT JOIN MovTipo t ON t.Modulo = 'CXC'
