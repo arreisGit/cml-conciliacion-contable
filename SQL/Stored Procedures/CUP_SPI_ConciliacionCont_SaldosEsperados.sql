@@ -212,13 +212,21 @@ AS BEGIN
   SELECT 
     @Ejercicio,
     @Periodo,
-    SaldoInicial =  SUM(CASE 
+    SaldoInicial = ISNULL
+                   (
+                     SUM(CASE 
                           WHEN CAST(d.FechaContable AS DATE) < @FechaInicio THEN 
                             (ISNULL(d.Debe,0) - ISNULL(d.Haber,0)) * f.Factor
                           ELSE
                             0
-                        END),
-    SaldoFinal =  SUM((ISNULL(d.Debe,0) - ISNULL(d.Haber,0)) * f.Factor)
+                        END)
+                     , 0 
+                   ),
+    SaldoFinal =  ISNULL
+                  (
+                     SUM((ISNULL(d.Debe,0) - ISNULL(d.Haber,0)) * f.Factor)
+                    , 0
+                  )
   FROM 
     CUP_ConciliacionCont_Tipo_CuentasContables cL
   JOIN Cta ON Cta.Cuenta = cl.Cuenta
