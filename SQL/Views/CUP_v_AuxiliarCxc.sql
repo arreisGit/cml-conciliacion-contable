@@ -26,6 +26,7 @@ AS
 SELECT
   a.Rama,
   AuxID = a.ID,
+  a.Empresa,
   a.Sucursal,
   a.Cuenta,
   calc.Mov,
@@ -133,6 +134,7 @@ UNION  -- Saldo al corte facturas anticipo
 SELECT
   a.Rama,
   a.AuxID,
+  a.Empresa,
   a.Sucursal,
   a.Cuenta,
   Mov      = a.Mov,
@@ -172,6 +174,7 @@ UNION -- Reevaluaciones del Mes
 SELECT
   Rama = 'REV',
   AuxID = NULL,
+  c.Empresa,
   c.Sucursal,
   Cuenta = c.Cliente,
   c.Mov,

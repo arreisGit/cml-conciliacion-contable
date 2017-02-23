@@ -26,6 +26,7 @@ AS
 SELECT
   a.Rama,
   AuxID  = a.ID,
+  a.Empresa,
   a.Sucursal,
   a.Cuenta,
   a.Mov,
@@ -96,6 +97,7 @@ UNION
 SELECT
   Rama = 'REV',
   AuxID = NULL,
+  p.Empresa,
   p.Sucursal,
   Cuenta = p.Proveedor,
   p.Mov,
