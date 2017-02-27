@@ -39,6 +39,7 @@ VALUES
   ,( 3, '113-604-001-0000') -- Cuprum FAB SA DE CV
   ,( 3, '113-605-000-0000') -- Carga Inicial de Clientes Alutodo
   ,( 3, '113-701-000-0000') -- Cuenta X Cobrar a DAISA
+  ,( 3, '113-800-200-0000') -- Clientes Nacionales MEX
   ,( 3, '113-800-400-0000') -- Clientes Nacionales QRO
   ,( 3, '213-100-000-0000') -- Anticipo Clientes GDL
   ,( 3, '213-200-000-0000') -- Anticipo Clientes MEX
