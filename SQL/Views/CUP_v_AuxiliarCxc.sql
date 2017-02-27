@@ -71,6 +71,17 @@ LEFT JOIN Cxc doc ON doc.Mov = a.Aplica
                  AND doc.Movid = a.AplicaID
 LEFT JOIN Movtipo at ON at.Modulo = 'CXC'
                     AND at.Mov = a.Aplica
+--Origen doc
+OUTER APPLY(
+            SELECT TOP 1 
+              o_doc.ID 
+            FROM
+              cxc o_doc
+            WHERE
+              'CXC' = doc.OrigenTipo
+            AND o_doc.Mov = doc.Origen
+            AND o_doc.MovId = doc.OrigenID    
+            ) origen_doc         
 -- Campos Calculados
 CROSS APPLY ( SELECT
                 Mov = CASE 
@@ -97,7 +108,7 @@ CROSS APPLY ( SELECT
                 ModuloID = CASE 
                               WHEN ISNULL(t.Clave,'') = 'CXC.NC'
                             AND a.Mov = 'Saldos Cte' THEN
-                                doc.ID
+                               ISNULL(origen_doc.ID, doc.ID)
                               ELSE
                                 a.ModuloID
                             END,
