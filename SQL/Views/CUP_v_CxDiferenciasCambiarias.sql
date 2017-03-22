@@ -45,14 +45,22 @@ SELECT -- Cobros CXC y Ajustes.
   ImporteMN_TC_Rev = importes_calculo.ImporteMNTCRev,
   ImporteMN_TC_Pago = importes_calculo.ImporteMNTCAplica,
   Factor = dt.Factor,
-  Diferencia_Cambiaria_MN = ROUND((  
-                                    ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                                  - ISNULL(importes_calculo.ImporteMNTCRev,0)
-                                  ) * dt.Factor,4,1),
-  Diferencia_Cambiaria_TCOrigen_MN = ROUND((  
-                                            ISNULL(importes_calculo.ImporteMNTCAplica,0)
-                                          - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
-                                          ) * dt.Factor,4,1),
+  Diferencia_Cambiaria_MN = ROUND
+                            (
+                              (  
+                                ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                              - ISNULL(importes_calculo.ImporteMNTCRev,0)
+                              ) 
+                            *  calc.Factor
+                            ,4,1),
+  Diferencia_Cambiaria_TCOrigen_MN = ROUND
+                                     (
+                                        (  
+                                          ISNULL(importes_calculo.ImporteMNTCAplica,0)
+                                        - ISNULL(importes_calculo.ImporteMNTCOrigen,0)
+                                        ) 
+                                      *  calc.Factor
+                                     , 4,1),
   importes_calculo.IVAFiscal
 FROM
   Cxc c 
@@ -63,6 +71,15 @@ JOIN Movtipo dt ON dt.Modulo = 'CXC'
                 AND dt.Mov = d.Aplica
 JOIN cxc doc ON doc.Mov = d.Aplica
             AND doc.Movid = d.AplicaID
+CROSS APPLY(
+             SELECT 
+               Factor = CASE t.Clave
+                          WHEN 'CXC.AJM' THEN 
+                              -1 * dt.Factor
+                          ELSE 
+                              dt.Factor
+                        END
+           ) calc
 -- MovFlujo Origen
 OUTER APPLY(
               SELECT TOP 1
@@ -641,6 +658,8 @@ CROSS APPLY(
               FactorDiff = CASE t.Clave
                             WHEN 'CXP.DC' THEN 
                               1
+                            WHEN 'CXP.AJM' THEN 
+                              -1 * dt.Factor
                             ELSE 
                               -1
                            END  
