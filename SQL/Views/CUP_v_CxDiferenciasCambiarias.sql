@@ -158,7 +158,10 @@ AND c.ClienteMoneda <> 'Pesos'
 AND t.clave IN ('CXC.C','CXC.ANC','CXC.AJM')
 AND ISNULL(d.Importe,0) <> 0
 AND d.Aplica NOT IN ('Redondeo','Saldo a Favor')
-AND dt.Clave <> 'CXC.NC'
+AND NOT (    
+             t.Clave <> 'CXC.AJM'
+         AND dt.Clave = 'CXC.NC'
+        )
 
 UNION -- Aplicaciones CXC
 
