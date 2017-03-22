@@ -24,7 +24,7 @@ GO
 CREATE VIEW CUP_v_CxDiferenciasCambiarias
 AS
 
-SELECT -- Cobros CXC
+SELECT -- Cobros CXC y Ajustes.
   c.Ejercicio,
   c.Periodo,
   Modulo = 'CXC',
@@ -155,7 +155,7 @@ CROSS APPLY(
 WHERE 
     c.Estatus IN ('CONCLUIDO','CANCELADO')
 AND c.ClienteMoneda <> 'Pesos'
-AND t.clave IN ('CXC.C','CXC.ANC')
+AND t.clave IN ('CXC.C','CXC.ANC','CXC.AJM')
 AND ISNULL(d.Importe,0) <> 0
 AND d.Aplica NOT IN ('Redondeo','Saldo a Favor')
 AND dt.Clave <> 'CXC.NC'
@@ -494,7 +494,7 @@ AND c.Moneda <> 'Pesos'
 AND t.clave = 'CXC.DFA'
 AND ISNULL(c.Importe,0) <> 0
 
-UNION -- Pagos Cxp
+UNION -- Pagos y Ajustes Cxp 
 
 SELECT
   p.Ejercicio,
@@ -652,7 +652,7 @@ CROSS APPLY(
 WHERE 
     p.Estatus IN ('CONCLUIDO','CANCELADO')
 AND p.ProveedorMoneda <> 'Pesos'
-AND t.clave IN ('CXP.P','CXP.ANC','CXP.DC')
+AND t.clave IN ('CXP.P','CXP.ANC','CXP.DC','CXP.AJM')
 AND ISNULL(d.Importe,0) <> 0
 AND d.Aplica NOT IN ('Redondeo','Saldo a Favor')
 AND NOT(   t.Clave IN ('CXP.P','CXP.ANC')
