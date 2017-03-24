@@ -71,6 +71,7 @@ JOIN Movtipo dt ON dt.Modulo = 'CXC'
                 AND dt.Mov = d.Aplica
 JOIN cxc doc ON doc.Mov = d.Aplica
             AND doc.Movid = d.AplicaID
+            AND doc.Cliente = c.Cliente
 CROSS APPLY(
              SELECT 
                Factor = CASE t.Clave
@@ -218,6 +219,7 @@ JOIN Movtipo t ON t.Modulo = 'CXC'
               AND t.Mov = c.Mov 
 JOIN cxc doc ON doc.Mov = c.MovAplica
             AND doc.Movid = c.MovAplicaID
+            AND doc.Cliente = c.Cliente
 JOIN Movtipo mt ON mt.Modulo = 'CXC'
                 AND mt.Mov = c.MovAplica
 -- MovFlujo Origen
@@ -560,6 +562,7 @@ JOIN Movtipo dt ON dt.Modulo = 'CXP'
                 AND dt.Mov = d.Aplica
 JOIN Cxp doc ON doc.Mov = d.Aplica
                AND doc.Movid = d.AplicaID
+               AND doc.Proveedor = p.Proveedor
 -- MovFlujo Origen
 OUTER APPLY(
               SELECT TOP 1
@@ -718,6 +721,7 @@ JOIN Movtipo t ON t.Modulo = 'CXP'
               AND t.Mov = p.Mov 
 JOIN CXP doc ON doc.Mov = p.MovAplica
             AND doc.Movid = p.MovAplicaID
+            AND doc.Proveedor = p.Proveedor
 JOIN Movtipo mt ON mt.Modulo = 'CXP'
                 AND mt.Mov = p.MovAplica
 -- MovFlujo Origen
