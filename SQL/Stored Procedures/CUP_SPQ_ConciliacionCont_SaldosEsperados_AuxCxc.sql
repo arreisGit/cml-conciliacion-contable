@@ -150,6 +150,60 @@ AS BEGIN
                       AND t.Mov = aux.Mov
   LEFT JOIN Cxc doc ON doc.Mov = aux.Mov
                     AND doc.MovId = aux.MovID
+  -- Primer Tc
+  OUTER APPLY(
+              SELECT TOP 1 
+                  first_aux.TipoCambio
+              FROM 
+                Auxiliar first_aux 
+              JOIN Rama fr ON fr.Rama = first_aux.Rama 
+              WHERE 
+                fr.Mayor = 'CXC'
+              AND first_aux.Modulo = 'CXC'
+              AND first_aux.ModuloID = doc.ID
+              ORDER BY 
+                first_aux.ID ASC
+             ) primer_tc
+  -- Datos del doc en Modulo Origen
+ LEFT JOIN Venta vtas_origen ON 'VTAS'  = doc.OrigenTipo
+                            AND vtas_origen.Mov = doc.Origen
+                            AND vtas_origen.MovID = doc.OrigenID
+                            AND vtas_origen.Cliente = doc.Cliente
+                            AND vtas_origen.Moneda = doc.ClienteMoneda
+  -- Ultima Rev Mes Actual
+  OUTER APPLY ( SELECT TOP 1  
+                  ur.ID ,
+                  TipoCambio = ur.ClienteTipoCambio
+                FROM 
+                    Cxc ur 
+                JOIN CxcD urD ON  urD.Id = ur.ID
+                JOIN Movtipo urt ON urt.Modulo = 'CXC'
+                                AND urt.Mov =   ur.Mov
+                WHERE
+                  urt.Clave = 'CXC.RE'
+                AND ur.Estatus = 'CONCLUIDO'
+                AND ur.FechaEmision < @FechaInicio 
+                AND urD.Aplica = aux.Mov
+                AND urD.AplicaID = aux.MovID  
+                ORDER BY 
+                  ur.ID DESC ) ultRev_mes_anterior
+  -- Ultima Rev Mes Actual
+  OUTER APPLY ( SELECT TOP 1  
+                  ur.ID ,
+                  TipoCambio = ur.ClienteTipoCambio
+                FROM 
+                    Cxc ur 
+                JOIN CxcD urD ON  urD.Id = ur.ID
+                JOIN Movtipo urt ON urt.Modulo = 'CXC'
+                                AND urt.Mov =   ur.Mov
+                WHERE
+                  urt.Clave = 'CXC.RE'
+                AND ur.Estatus = 'CONCLUIDO'
+                AND ur.FechaEmision <= @FechaFin 
+                AND urD.Aplica = aux.Mov
+                AND urD.AplicaID = aux.MovID  
+                ORDER BY 
+                  ur.ID DESC ) ultRev_mes_actual
   -- Factor Reevaluacion Dlls
   CROSS APPLY(
                 SELECT 
@@ -160,7 +214,7 @@ AS BEGIN
                                       THEN 
                                           ISNULL(doc.TipoCambio,1)
                                       ELSE 
-                                          ISNULL(@TC_Inicial,1)
+                                        ISNULL(ultRev_mes_anterior.TipoCambio, ISNULL(primer_tc.TipoCambio, doc.TipoCambio))
                                     END,
                   FactorCierre =  CASE 
                                     WHEN t.Clave IN ('CXC.A','CXC.FA') 
@@ -168,7 +222,7 @@ AS BEGIN
                                     AND 1 = 2 THEN 
                                         ISNULL(doc.TipoCambio,1)
                                     ELSE 
-                                        ISNULL(@TC_Final,1)
+                                        ISNULL(ultRev_mes_actual.TipoCambio,ISNULL(primer_tc.TipoCambio, doc.TipoCambio))
                                   END
               ) rev
   -- Calculados
