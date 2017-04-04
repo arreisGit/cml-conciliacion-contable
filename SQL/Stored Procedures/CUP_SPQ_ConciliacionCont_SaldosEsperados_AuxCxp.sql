@@ -45,26 +45,6 @@ AS BEGIN
 
   SET @FechaFin = DATEADD(DAY,-1,DATEADD(MONTH,1,@FechaInicio))
 
-  SELECT TOP 1
-    @TC_Inicial = TipoCambio 
-  FROM
-    MonHist
-  WHERE 
-    CAST(Fecha AS DATE) < @FechaInicio
-  AND Moneda = 'Dlls'
-  ORDER BY
-    ID DESC
-
-  SELECT TOP 1
-    @TC_Final = TipoCambio 
-  FROM
-    MonHist
-  WHERE 
-    CAST(Fecha As DATE) <= @FechaFin
-  AND Moneda = 'Dlls'
-  ORDER BY
-    ID DESC
-  
   DECLARE @AntSaldosCxCorte TABLE
   (
     Mov CHAR(20) NOT NULL,
@@ -154,7 +134,55 @@ AS BEGIN
   LEFT JOIN MovTipo t ON t.Modulo = 'CXP'
                       AND t.Mov = aux.Mov
   LEFT JOIN Cxp doc ON doc.Mov = aux.Mov
-                    AND doc.MovId = aux.MovID
+                   AND doc.MovId = aux.MovID
+  LEFT JOIN Compra coms_origen ON 'COMS' = doc.OrigenTipo 
+                               AND coms_origen.Mov = doc.Origen
+                               AND coms_origen.MovId = doc.OrigenID
+                               AND coms_origen.Proveedor = doc.Proveedor
+                               AND coms_origen.Moneda = doc.Moneda
+  LEFT JOIN Gasto gas_origen ON 'GAS' = doc.OrigenTipo 
+                            AND gas_origen.Mov = doc.Origen
+                            AND gas_origen.MovId = doc.OrigenID
+                            AND gas_origen.Acreedor = doc.Proveedor
+                            AND gas_origen.Moneda = doc.Moneda
+  OUTER APPLY( 
+              SELECT 
+                 TipoCambio = ISNULL(coms_origen.TipoCambio, gas_origen.TipoCambio)
+             ) mov_origen
+   -- Ultima Reevaluacion Mes Anterior
+  OUTER APPLY ( SELECT TOP 1  
+                  ur.ID ,
+                  TipoCambio = ur.ProveedorTipoCambio
+                FROM 
+                    Cxp ur 
+                JOIN CxpD urD ON  urD.Id = ur.ID
+                JOIN Movtipo urt ON urt.Modulo = 'CXP'
+                                AND urt.Mov =   ur.Mov
+                WHERE
+                  urt.Clave = 'CXP.RE'
+                AND ur.Estatus = 'CONCLUIDO'
+                AND ur.FechaEmision < @FechaInicio 
+                AND urD.Aplica = aux.Mov
+                AND urD.AplicaID = aux.MovID
+                ORDER BY 
+                  ur.ID DESC ) ultRev_mes_anterior
+   -- Ultima Reevaluacion Mes Actual
+     OUTER APPLY ( SELECT TOP 1  
+                  ur.ID ,
+                  TipoCambio = ur.ProveedorTipoCambio
+                FROM 
+                    Cxp ur 
+                JOIN CxpD urD ON  urD.Id = ur.ID
+                JOIN Movtipo urt ON urt.Modulo = 'CXP'
+                                AND urt.Mov =   ur.Mov
+                WHERE
+                  urt.Clave = 'CXP.RE'
+                AND ur.Estatus = 'CONCLUIDO'
+                AND ur.FechaEmision <= @FechaFin 
+                AND urD.Aplica = aux.Mov
+                AND urD.AplicaID = aux.MovId
+                ORDER BY 
+                  ur.ID DESC ) ultRev_mes_actual
   -- Factor Reevaluacion Dlls
   CROSS APPLY(
                 SELECT 
@@ -162,16 +190,32 @@ AS BEGIN
                                       WHEN t.Clave IN ('CXP.A') 
                                       AND @FechaInicio >= '2016-05-01' 
                                       THEN 
-                                          ISNULL(doc.TipoCambio,1)
+                                        ISNULL(doc.TipoCambio,1)
                                       ELSE 
-                                          ISNULL(@TC_Inicial,1)
+                                        ISNULL
+                                        (
+                                          ultRev_mes_anterior.TipoCambio,
+                                          ISNULL
+                                          (
+                                            mov_origen.TipoCambio,
+                                            doc.TipoCambio
+                                          )
+                                        )
                                     END,
                   FactorCierre =  CASE 
                                     WHEN t.Clave IN ('CXP.A') 
                                     AND @FechaFin >= '2016-04-30' THEN 
                                         ISNULL(doc.TipoCambio,1)
                                     ELSE 
-                                        ISNULL(@TC_Final,1)
+                                        ISNULL
+                                        (
+                                          ultRev_mes_actual.TipoCambio,
+                                          ISNULL
+                                          (
+                                            mov_origen.TipoCambio,
+                                            doc.TipoCambio
+                                          )
+                                        )
                                   END
               ) rev
     -- Calculados
