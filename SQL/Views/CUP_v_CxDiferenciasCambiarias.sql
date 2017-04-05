@@ -5,8 +5,6 @@ GO
 /*=============================================
   Created by:    Enrique Sierra Gtez
   Creation Date: 2016-10-10
-
-
   Description: Desglosa las Diferencias Cambiarias 
               de los Movimientos en Cxc y CxP.
  
@@ -14,7 +12,6 @@ GO
             FROM  CUP_v_CxDiferenciasCambiarias
             WHERE Modulo = 'CXP'
             AND ModuloID = 108192
-
 =============================================*/
 
 
@@ -732,7 +729,7 @@ OUTER APPLY(
               FROM 
                 MovFlujo mf 
               WHERE 
-                mf.DModulo = 'CXC'
+                mf.DModulo = 'CXP'
               AND mf.DID = doc.ID
               AND mf.OModulo = doc.OrigenTipo
               AND mf.OMov = doc.Origen
